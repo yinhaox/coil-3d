@@ -1,0 +1,198 @@
+$ godot --headless --path . --import
+[test] project: .
+$ godot --headless --path . -s res://tests/run_tests.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: main.title_text() returns the studio title
+PASS: main.status_text(0) formats zero frames
+PASS: main.status_text(7) formats seven frames
+PASS: main.status_text() clamps negative frames
+PASS: scenes/main.tscn exists
+PASS: scenes/main.tscn loads as a PackedScene
+PASS: main scene root is a Node2D
+PASS: main scene root is named Main
+PASS: main scene root runs src/main.gd
+PASS: main scene has a Title label
+PASS: Title label reads Game Studio
+PASS: project name is Game Studio
+PASS: main scene is registered in project.godot
+PASS: StudioCapture autoload points at the capture addon
+PASS: viewport width is 1152
+PASS: viewport height is 648
+PASS: every arena file in assets/data/arenas loads and validates
+PASS: the arena directory provides four arenas
+PASS: arenas load in file-name order
+PASS: two Classic arenas are provided
+PASS: a Maze arena is provided
+PASS: a Time Attack arena is provided
+PASS: arena_for_mode returns the first Classic file by name
+PASS: a second arena for the same mode is reported as a warning
+PASS: classic-12 is a 12x12 board
+PASS: classic-12 has no obstacles
+PASS: classic-12 spawns one food
+PASS: classic-16 is a 16x16 board
+PASS: classic-16 starts at [8, 8]
+PASS: classic-16 starts facing east
+PASS: classic-16 starts at 6.0 cells/s
+PASS: classic-16 caps at 14.0 cells/s
+PASS: classic-16 has no time limit
+PASS: maze-01 places sixteen obstacle cells
+PASS: maze-01 keeps two food on the board
+PASS: maze-01 has no time limit
+PASS: maze obstacles are inside the board and off the start cell
+PASS: time-attack-16 keeps three food on the board
+PASS: time-attack-16 has a time limit
+PASS: time-attack-16 ends after 90 seconds
+PASS: time-attack-16 starts at 7.0 cells/s
+PASS: the reference arena dict passes validation
+PASS: unknown keys are ignored and reported as a warning
+PASS: malformed JSON reports the file and line
+PASS: a non-object JSON document is rejected
+PASS: an unknown schema version is rejected
+PASS: a non-kebab-case id is rejected
+PASS: an unknown mode is rejected
+PASS: a non-integer column count is rejected
+PASS: a board narrower than 4 cells is rejected
+PASS: a board taller than 16 cells is rejected
+PASS: a non-object size is rejected
+PASS: zero food is rejected
+PASS: a fractional food count is rejected
+PASS: a starting speed below 4.0 is rejected
+PASS: a speed cap above 20.0 is rejected
+PASS: a speed cap below the initial speed is rejected
+PASS: a time limit on a Classic arena is rejected
+PASS: a Time Attack arena without a time limit is rejected
+PASS: a time limit above 600 seconds is rejected
+PASS: a start cell outside the board is rejected
+PASS: an unknown start direction is rejected
+PASS: a start cell with no room for the snake body is rejected
+PASS: an obstacle outside the board is rejected
+PASS: a duplicated obstacle is rejected
+PASS: an obstacle on the start cell is rejected
+PASS: an obstacle on the start space is rejected
+PASS: a missing food_max is rejected
+PASS: a missing start is rejected
+PASS: a missing obstacle list is rejected
+PASS: a duplicate id keeps only the first file
+PASS: a duplicate id is reported with the file name
+PASS: a broken file does not hide the valid arenas
+PASS: a broken file is reported in the load errors
+PASS: a missing arena directory is a readable error
+PASS: start() enters the countdown
+PASS: the initial snake has four segments
+PASS: the snake head starts on the arena start cell
+PASS: the second segment sits behind the head
+PASS: turns and steps are ignored during the countdown
+PASS: half a second does not finish the countdown
+PASS: the countdown hands over to playing
+PASS: a fresh run scores zero
+PASS: a fresh run fills food_max food
+PASS: a fresh run uses the initial speed
+PASS: step() reports a movement step
+PASS: the snake moves one cell east
+PASS: moving without food keeps the length
+PASS: the tail follows the body forward
+PASS: a 180-degree reverse turn is refused
+PASS: a refused reverse keeps the heading
+PASS: a diagonal direction is refused
+PASS: a repeat of the current direction is refused
+PASS: a perpendicular turn is queued
+PASS: the opposite of the queued direction is dropped
+PASS: the queued turn applies on the next step
+PASS: the head moved north
+PASS: the first of two queued turns is accepted
+PASS: the second queued turn is accepted
+PASS: a third turn is refused while the queue is full
+PASS: the first queued turn wins the step
+PASS: the second queued turn applies on the following step
+PASS: two fast reverse inputs do not kill the snake
+PASS: one food is on the board for a Classic arena
+PASS: food spawns inside the arena
+PASS: food never spawns on the snake
+PASS: food never spawns on an obstacle
+PASS: the snake can reach the first food
+PASS: eating increments the food counter
+PASS: eating scores ten points
+PASS: eating grows the snake by one segment
+PASS: eating raises the speed by 0.2 cells/s
+PASS: food respawns up to food_max
+PASS: respawned food never lands on the snake
+PASS: respawned food takes a new cell
+PASS: food stays inside and off the snake across seeds
+PASS: Maze food avoids obstacles and fills food_max
+PASS: hitting the wall ends the run
+PASS: a wall hit is reported as wall
+PASS: a fatal wall step leaves the head in place
+PASS: hitting an obstacle ends the run
+PASS: an obstacle hit is reported as obstacle
+PASS: entering the cell the tail vacates is legal
+PASS: the head entered the vacated tail cell
+PASS: the snake grows before the self-collision check
+PASS: the snake has five segments before turning back
+PASS: turning back into the body ends the run
+PASS: a body hit is reported as self
+PASS: the snake reaches food on the capped arena
+PASS: the speed curve reaches the 6.2 cap after one food
+PASS: the step duration follows the current speed
+PASS: the snake reaches a second food on the capped arena
+PASS: the capped arena run ate two food
+PASS: speed never exceeds max_speed
+PASS: a board without free cells spawns no food
+PASS: a full board ends the run
+PASS: a full board reports cleared
+PASS: food_max above the free cell count only spawns the available food
+PASS: a board with two free cells is playable
+PASS: the first free-cell food is eaten
+PASS: the first food grows the snake
+PASS: the board is not cleared while food remains
+PASS: the last free-cell food is eaten
+PASS: the last food grows the snake
+PASS: filling the board ends the run
+PASS: filling the board reports cleared
+PASS: a cleared board keeps no food
+PASS: classic-12 starts playing after the countdown
+PASS: classic-12 starts with the shared four-segment snake
+PASS: classic-12 starts on its own start cell
+PASS: classic-12 fills its own food_max
+PASS: classic-12 starts at zero score
+PASS: classic-12 advances a logic step
+PASS: classic-12 moves along its own start direction
+PASS: classic-12 keeps playing after one step
+PASS: classic-16 starts playing after the countdown
+PASS: classic-16 starts with the shared four-segment snake
+PASS: classic-16 starts on its own start cell
+PASS: classic-16 fills its own food_max
+PASS: classic-16 starts at zero score
+PASS: classic-16 advances a logic step
+PASS: classic-16 moves along its own start direction
+PASS: classic-16 keeps playing after one step
+PASS: maze-01 starts playing after the countdown
+PASS: maze-01 starts with the shared four-segment snake
+PASS: maze-01 starts on its own start cell
+PASS: maze-01 fills its own food_max
+PASS: maze-01 starts at zero score
+PASS: maze-01 advances a logic step
+PASS: maze-01 moves along its own start direction
+PASS: maze-01 keeps playing after one step
+PASS: time-attack-16 starts playing after the countdown
+PASS: time-attack-16 starts with the shared four-segment snake
+PASS: time-attack-16 starts on its own start cell
+PASS: time-attack-16 fills its own food_max
+PASS: time-attack-16 starts at zero score
+PASS: time-attack-16 advances a logic step
+PASS: time-attack-16 moves along its own start direction
+PASS: time-attack-16 keeps playing after one step
+PASS: the injected clock session starts playing
+PASS: Time Attack keeps playing just below 90 seconds
+PASS: elapsed time comes from the injected clock
+PASS: Time Attack ends at 90 seconds
+PASS: the 90-second end reason is time_up
+PASS: pause() stops the session
+PASS: a paused session does not move
+PASS: resume() starts the countdown again
+PASS: movement waits for the resume countdown
+PASS: paused wall time is not counted by the time limit
+PASS: a Classic arena ignores the clock and has no time limit
+PASS: a collision at the time limit is reported before time_up
+PASS: 191 checks passed
+[test] PASS
