@@ -32,6 +32,7 @@ func _run_tests() -> void:
 	_test_boot_scene()
 	_test_game_scene()
 	_test_project_settings()
+	_test_fps_log()
 	_test_grid_space()
 	_test_iso_camera()
 	_test_session_driver()
@@ -554,6 +555,61 @@ func _test_project_settings() -> void:
 	_check(ProjectSettings.get_setting("autoload/StudioCapture", "") == "*" + CAPTURE_SCRIPT_PATH, "StudioCapture autoload points at the capture addon")
 	_check(int(ProjectSettings.get_setting("display/window/size/viewport_width", 0)) == 1152, "viewport width is 1152")
 	_check(int(ProjectSettings.get_setting("display/window/size/viewport_height", 0)) == 648, "viewport height is 648")
+
+
+func _test_fps_log() -> void:
+	var no_arguments := FpsLog.parse_args(PackedStringArray())
+	_check(FpsLog.from_user_args(PackedStringArray()) == null, "no arguments create no frame sampler")
+	_check(
+		str(no_arguments["path"]).is_empty() and float(no_arguments["quit_after"]) == 0.0,
+		"no arguments ask for no log and no quit timer"
+	)
+	_check(
+		FpsLog.from_user_args(PackedStringArray(["--quit-after=0"])) == null,
+		"a zero quit timer alone creates no sampler"
+	)
+
+	var options := FpsLog.parse_args(PackedStringArray([
+		"--fps-log=production/qa/evidence/perf-fps-log/fps.log",
+		"--quit-after=10",
+	]))
+	_check(
+		str(options["path"]) == "production/qa/evidence/perf-fps-log/fps.log",
+		"--fps-log carries the log path"
+	)
+	_check(is_equal_approx(float(options["quit_after"]), 10.0), "--quit-after carries the seconds")
+
+	var line := FpsLog.format_line(123, 16.6667, 60.0)
+	_check(line == "123,16.667,60.000", "a sample line is t_ms,frame_ms,fps with three decimals")
+	var parsed := FpsLog.parse_line(line)
+	_check(int(parsed.get("t_ms", -1)) == 123, "the parser recovers t_ms")
+	_check(absf(float(parsed.get("frame_ms", 0.0)) - 16.667) < 0.0005, "the parser recovers frame_ms")
+	_check(absf(float(parsed.get("fps", 0.0)) - 60.0) < 0.0005, "the parser recovers fps")
+	_check(FpsLog.parse_line("123,16.667").is_empty(), "the parser rejects a line with two fields")
+	_check(FpsLog.parse_line("t_ms,frame_ms,fps").is_empty(), "the parser rejects the header line")
+
+	_check(not FpsLog.should_quit(199.0, 0.2), "the quit timer keeps running before its deadline")
+	_check(FpsLog.should_quit(200.0, 0.2), "the quit timer fires at its deadline")
+	_check(not FpsLog.should_quit(10000.0, 0.0), "a zero quit timer never quits")
+
+	var unwritable := FpsLog.from_user_args(PackedStringArray([
+		"--fps-log=res://no_such_directory_for_fps_log/fps.log",
+	]))
+	_check(unwritable != null, "an unwritable log path still creates the sampler")
+	if unwritable != null:
+		_check(not unwritable.is_logging(), "an unwritable log path leaves sampling off instead of crashing")
+		unwritable.free()
+
+	var summary := FpsLog.summarize(PackedStringArray([
+		FpsLog.format_line(0, 16.0, 62.5),
+		FpsLog.format_line(16, 20.0, 50.0),
+		FpsLog.format_line(36, 24.0, 41.6667),
+		"not a sample",
+	]))
+	_check(int(summary["samples"]) == 3, "the summary counts only parsable sample lines")
+	_check(absf(float(summary["min_fps"]) - 41.6667) < 0.001, "the summary reports the minimum FPS")
+	_check(absf(float(summary["average_fps"]) - 51.3889) < 0.001, "the summary averages the sample FPS")
+	_check(absf(float(summary["p95_frame_ms"]) - 24.0) < 0.001, "the summary reports the p95 frame time")
 
 
 # ---------------------------------------------------------------------------
