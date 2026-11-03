@@ -1,30 +1,30 @@
-# Vision: <game name>
+# Vision: Coil 3D
 
-_Owned by the creative director. Every design document must serve this page; a design that cannot name the pillar it serves is not ready._
+_由创意总监维护。每个设计页都必须能指向这里的一个支柱；指不到的设计不算就绪。_
 
 ## Vision statement
 
-_One paragraph a player would recognize: what this game is, who it is for, and the feeling it leaves behind._
+《Coil 3D》是一款 3D 网格贪吃蛇：在等距视角的封闭竞技场里，玩家用四个方向操控一条不断变长的蛇，吃食物得分，撞墙、撞障碍或撞到自己结束。它面向想用三到五分钟打完一局、并清楚知道自己为什么输的桌面玩家。
 
 ## Pillars
 
-Three to five pillars. Each is one sentence, and each is a promise a design can be tested against.
-
-- **<Pillar>** - what the player should be able to say about the game because of it.
-- **<Pillar>** - ...
-- **<Pillar>** - ...
+- **一眼读懂的三维空间** — 玩家能凭等距视角准确判断蛇头、墙和障碍的距离，不需要试错。
+- **越吃越快的心跳** — 速度随得分爬升，每次转向都更紧张，失败原因始终看得见。
+- **再来一局的干净循环** — 菜单、一局、结算、重开在 90 秒内闭环，最高分始终可见。
 
 ## Anti-goals
 
-What this game deliberately is not. An anti-goal keeps scope honest when a feature is tempting.
-
-- Not <thing>, because <reason>.
-- Not <thing>, because <reason>.
+- 不做剧情、角色或关卡叙事，因为一局游戏只承载一条蛇和一个分数。
+- 不引入外部美术或音频，因为程序化几何与合成音效已经足够表达，且能压住包体与授权成本。
+- 1.0 不做联机、排行榜、内购或云存档，因为小体量商业发行先从离线买断闭环开始。
+- 不做体积式三维移动（上下翻飞），因为“四面墙 + 禁止 180°”是玩家一眼能懂的操作前提。
 
 ## Session shape
 
-_How a typical play session starts, what the player does in the first five minutes, and what brings them back._
+启动进入主菜单，3 秒内可开始一局；第一分钟在 Classic 学会转向与加速；一局 1–3 分钟；结算页显示本局分数、最高分和重开按钮，默认焦点停在重开上；连续三局后仍能看到自己的最高分。
 
 ## Tone references
 
-_Games, films, books, or art that match the intended tone, with one line on what to borrow and what not to._
+- 《Snake》诺基亚版：借“四个方向 + 一条尾巴”的直觉，不借像素画风。
+- 《Tron: Light Cycles》：借暗底高亮网格的空间感，不借高速追逐题材。
+- 《Monument Valley》：借等距视角的清晰构图，不借解谜节奏。
