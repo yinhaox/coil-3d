@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "maze-01",
+  "mode": "maze",
+  "size": { "columns": 16, "rows": 16 },
+  "obstacles": [
+    [4, 2], [4, 5], [4, 10], [4, 13],
+    [7, 3], [8, 3],
+    [11, 2], [11, 5], [11, 10], [11, 13],
+    [7, 12], [8, 12],
+    [2, 7], [2, 8], [13, 7], [13, 8]
+  ],
+  "food_max": 2,
+  "initial_speed_cells_per_second": 5.0,
+  "max_speed_cells_per_second": 12.0,
+  "time_limit_seconds": null,
+  "start": { "cell": [8, 8], "direction": "east" }
+}

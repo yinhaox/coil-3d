@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "time-attack-16",
+  "mode": "time_attack",
+  "size": { "columns": 16, "rows": 16 },
+  "obstacles": [],
+  "food_max": 3,
+  "initial_speed_cells_per_second": 7.0,
+  "max_speed_cells_per_second": 14.0,
+  "time_limit_seconds": 90.0,
+  "start": { "cell": [8, 8], "direction": "east" }
+}
