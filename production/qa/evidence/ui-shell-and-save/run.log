@@ -1,0 +1,7 @@
+[run] user arguments: --quit-after=3
+[run] launching the game window; close it to return control
+$ godot --path . -- --quit-after=3
+Godot Engine v4.7.2.stable.steam.ed1daf0bf - https://godotengine.org
+OpenGL API 3.3.0 NVIDIA 616.56 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 3070 Ti Laptop GPU
+
+[run] Godot exited with code 0

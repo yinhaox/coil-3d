@@ -1,0 +1,5 @@
+[capture] removed stale file: C:\Users\yinha\.dsh\state\superagent-coil\work\ui-shell-save-fa94ca83db6b\production\qa\evidence\ui-shell-and-save\main-menu.png
+[capture] target: production\qa\evidence\ui-shell-and-save\main-menu.png
+[capture] waiting up to 60s for the PNG
+$ godot --path . -- --studio-capture=C:\Users\yinha\.dsh\state\superagent-coil\work\ui-shell-save-fa94ca83db6b\production\qa\evidence\ui-shell-and-save\main-menu.png
+[capture] OK: production\qa\evidence\ui-shell-and-save\main-menu.png (25457 bytes)

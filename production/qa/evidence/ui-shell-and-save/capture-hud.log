@@ -1,0 +1,6 @@
+[capture] removed stale file: C:\Users\yinha\.dsh\state\superagent-coil\work\ui-shell-save-fa94ca83db6b\production\qa\evidence\ui-shell-and-save\hud.png
+[capture] target: production\qa\evidence\ui-shell-and-save\hud.png
+[capture] user arguments: --screen=game --scenario=eaten
+[capture] waiting up to 60s for the PNG
+$ godot --path . -- --studio-capture=C:\Users\yinha\.dsh\state\superagent-coil\work\ui-shell-save-fa94ca83db6b\production\qa\evidence\ui-shell-and-save\hud.png --screen=game --scenario=eaten
+[capture] OK: production\qa\evidence\ui-shell-and-save\hud.png (41183 bytes)
