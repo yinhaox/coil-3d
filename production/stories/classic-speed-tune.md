@@ -21,7 +21,7 @@ Issue: https://github.com/yinhaox/coil-3d/issues/15
 ## Acceptance
 
 - [x] `classic-12.json` 与 `classic-16.json` 的 `initial_speed_cells_per_second` 为 8.0，`max_speed_cells_per_second` 为 16.0。
-- [x] `tests/run_tests.gd` 断言两张 Classic 场地的 8.0/16.0，其余测试不变并通过。
+- [x] `tests/run_tests.gd` 断言两张 Classic 场地的 8.0/16.0；依赖旧 6 cells/s 的步进断言改为按当前步长推导，其余测试不变并通过。
 - [x] `check_command` 与 `test_command` 通过；截图确认游戏仍以 `classic-12` 正常启动。
 - [x] 设计文档 `design/core-rules.md` 与 `design/game-modes.md` 不在本 story 修改。
 
