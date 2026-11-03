@@ -1,6 +1,6 @@
 # Design: Release
 
-_1.0 的版本、三平台导出、许可与致谢、已知限制和发布门槛。负责人：release-manager。_
+_1.0 的版本、三平台导出、性能与包体预算、许可与致谢、已知限制和发布门槛。负责人：release-manager。_
 
 Serves pillar: **再来一局的干净循环**。
 
@@ -43,6 +43,21 @@ Serves pillar: **再来一局的干净循环**。
 17. 只支持 Godot 4.7 / GL Compatibility；不提供 Vulkan/Forward+ 构建。
 18. 同一台机器同时运行两个实例时，后退出者覆盖先退出者的存档；1.0 不实现文件锁。
 
+## 性能与包体预算
+
+三个平台各自实测；同一提交导出，帧率、内存与首屏沿用 [architecture.md](architecture.md) 的提案，包体按发布 zip 的字节数计。
+
+| 指标 | 目标 | 发布门禁 | 单位 | 测量点 |
+|---|---|---|---|---|
+| 目标帧率 | 60 | ≥60 | FPS | 1152×648、GL Compatibility、集成显卡，一局全程平均 |
+| 内存上限 | 256 | ≤512 | MB | 主菜单与一局中的进程常驻峰值 |
+| 首屏时间 | 3.0 | ≤5.0 | seconds | 进程启动到主菜单可交互 |
+| Windows 包体 | 80 | ≤120 | MB | `coil-3d-1.0.0-windows-x86_64.zip` 字节数 |
+| macOS universal 包体 | 140 | ≤180 | MB | `coil-3d-1.0.0-macos-universal.zip` 字节数 |
+| Linux 包体 | 80 | ≤120 | MB | `coil-3d-1.0.0-linux-x86_64.zip` 字节数 |
+
+_包体三项与 macOS 放宽到 180 MB 是本页提案（通用二进制含 arm64 与 x86_64 两套架构），首轮构建实测后定稿；任一指标越过门禁，三平台整批不发布。_
+
 ## Release checklist
 
 | # | Gate | Evidence | Owner |
@@ -54,7 +69,9 @@ Serves pillar: **再来一局的干净循环**。
 | 5 | `project.godot` 版本 = 1.0.0 | 文件行号 | tech-director |
 | 6 | 许可与制作人员页可打开 | 截图 | release-manager |
 | 7 | 已知限制写入 `README.txt` | 文件路径 | release-manager |
-| 8 | 人类批准发布 | 评审记录 | producer |
+| 8 | 帧率、内存与首屏达预算 | 每平台运行日志 | qa-lead |
+| 9 | 三平台包体达上限 | 构建记录（zip 大小） | release-manager |
+| 10 | 人类批准发布 | 评审记录 | producer |
 
 ## Numbers and tuning
 
@@ -65,12 +82,10 @@ Serves pillar: **再来一局的干净循环**。
 | Windows 最低版本 | 10 | 10+ | OS | 发布文档 |
 | macOS 最低版本 | 12 | 12+ | OS | 发布文档 |
 | Linux 基线 | Ubuntu 22.04 | 22.04+ | OS | 发布文档（以导出模板支持为准） |
-| 单平台包体目标 | 80 | ≤120 | MB | 导出预设 |
-| 冷启动到主菜单 | 3.0 | ≤5.0 | seconds | 发布检查 |
 | 发布阻塞缺陷 | 0 | 0 | issues | 发布检查 |
 | 构建可追溯性 | 1 个提交 | 1 | commit | 发布故事 |
 
-_三个平台、版本号与最低系统版本为提案；见 Open questions。_
+_三个平台、版本号与最低系统版本为提案；见 Open questions。帧率、内存、首屏与三平台包体预算见 [性能与包体预算](#性能与包体预算)。_
 
 ## Edge cases
 
@@ -81,12 +96,14 @@ _三个平台、版本号与最低系统版本为提案；见 Open questions。_
 - 缺少导出模板：构建失败并报告缺失模板版本，不用旧模板顶替。
 - 发布前发现阻塞缺陷：回到 bug-fix 流程，1.0.0 不带着已知崩溃发布。
 - 许可文件缺失：发布阻塞，不先用“临时许可”占位。
+- 首轮实测超出预算：先查是否误打包未使用资源或调试符号；仍超出则回到优化故事，或经人类批准调整预算，两种处理都写入构建记录。
 
 ## Open questions
 
 - 三个平台具体是 Windows/macOS/Linux，还是包含 Android/Web；issue 只写“三平台”，本页按桌面三平台提案；负责人：producer。
 - 代码与游戏的最终许可选择（MIT、专有 EULA 或其他）；负责人：producer。
 - 1.0 是否收费、定价与商店（Steam/itch.io/自有渠道）；负责人：producer。
+- 三平台包体上限（Windows/Linux 120 MB、macOS universal 180 MB）是否在首轮构建实测后收紧；负责人：release-manager。
 
 ## Links
 
