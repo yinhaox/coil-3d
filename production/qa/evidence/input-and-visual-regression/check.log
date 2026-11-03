@@ -20,9 +20,9 @@ Godot Engine v4.7.2.stable.steam.ed1daf0bf - https://godotengine.org
 [check] import OK
 $ godot --headless --path . --check-only --script res://src/game/game_controller.gd
 [check] ok res://src/game/game_controller.gd
-$ godot --headless --path . --check-only --script res://tests/run_tests.gd
-[check] ok res://tests/run_tests.gd
 $ godot --headless --path . --check-only --script res://tests/input_events.gd
 [check] ok res://tests/input_events.gd
+$ godot --headless --path . --check-only --script res://tests/run_tests.gd
+[check] ok res://tests/run_tests.gd
 [check] parsed 3 changed script(s)
 CHECK_EXIT=0
