@@ -54,5 +54,5 @@ Issue: https://github.com/yinhaox/coil-3d/issues/11
 ## Evidence
 
 - `production/qa/evidence/immediate-turn-input/index.md` — Run result: OBSERVED — 逻辑步 alpha 0.45 时蛇头已朝新方向转过 0.75 个 0.10 s 补间，测试日志记录输入当帧接受与步进时序断言
-- 截图：`initial.png`、`turn-preview.png`、`turning.png`（均来自本机 `capture_command`，1152×648）
+- 截图（均为本机真实运行，1152×648）：`initial.png` 来自 `run_command --capture`；`turn-preview.png`、`turning.png` 来自 `capture_command`。
 - 日志：`check.log`（退出码 0）、`test.log`（278 checks passed）、`run.log`（真实窗口退出码 0）、`capture-turn-preview.log`、`capture-turning.log`
