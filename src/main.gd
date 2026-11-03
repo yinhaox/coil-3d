@@ -1,26 +1,23 @@
-extends Node2D
+extends Node3D
 
-## Boot scene for the Game Studio template.
+## Boot entry for the first visible slice.
 ##
-## Keeps no gameplay state: it only shows the studio title so that a fresh
-## clone can run, and so that `capture_command` has something to screenshot.
+## Keeps no gameplay state and no rules: it only loads scenes/game.tscn, so the
+## main scene stays res://scenes/main.tscn (design/architecture.md rule 4). The
+## main menu that design rule 24 describes arrives with the UI story; until
+## then starting the game goes straight into the arena.
 
-## Text rendered by the Title label in scenes/main.tscn.
-const TITLE = "Game Studio"
-
-
-## Title text, exposed as a static helper so headless tests can check it
-## without instantiating the scene.
-static func title_text() -> String:
-	return TITLE
+const GAME_SCENE_PATH := "res://scenes/game.tscn"
 
 
-## Status line shown under the title. Negative frame counts are clamped to 0.
-static func status_text(frames: int) -> String:
-	return "%s (%d frames)" % [TITLE, maxi(frames, 0)]
+## Scene the boot entry loads, exposed so headless tests can assert the wiring.
+static func game_scene_path() -> String:
+	return GAME_SCENE_PATH
 
 
 func _ready() -> void:
-	var label := get_node_or_null("Title") as Label
-	if label != null:
-		label.text = title_text()
+	var packed := load(GAME_SCENE_PATH) as PackedScene
+	if packed == null:
+		push_error("main: cannot load %s" % GAME_SCENE_PATH)
+		return
+	add_child(packed.instantiate())
