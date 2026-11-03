@@ -277,6 +277,9 @@ func _eat_food(cell: Vector2i) -> bool:
 	return not is_equal_approx(previous_speed, _speed)
 
 
+## Returns why `next_head` is fatal, or NONE. The tail cell is legal when it
+## vacates this step (core-rules.md rule 7); an eating step grows first, so its
+## full body stays occupied.
 func _collision_reason(next_head: Vector2i, eating: bool) -> int:
 	if not _arena.is_inside(next_head):
 		return EndReason.WALL
