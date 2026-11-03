@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://src/game/game_controller.gd" id="1_controller"]
 [ext_resource type="Script" path="res://src/game/iso_camera.gd" id="2_camera"]
@@ -6,6 +6,8 @@
 [ext_resource type="Script" path="res://src/game/snake_view.gd" id="4_snake"]
 [ext_resource type="Script" path="res://src/game/food_view.gd" id="5_food"]
 [ext_resource type="Script" path="res://src/game/hud.gd" id="6_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="7_pause"]
+[ext_resource type="PackedScene" path="res://scenes/ui/end_panel.tscn" id="8_end"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -40,23 +42,58 @@ script = ExtResource("4_snake")
 script = ExtResource("5_food")
 
 [node name="HUD" type="CanvasLayer" parent="."]
+layer = 10
 script = ExtResource("6_hud")
 
-[node name="ScoreLabel" type="Label" parent="HUD"]
-offset_left = 24.0
-offset_top = 16.0
-offset_right = 424.0
-offset_bottom = 48.0
-theme_override_colors/font_color = Color(0.75, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 22
-text = "Score: 0"
+[node name="Stats" type="MarginContainer" parent="HUD"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 408.0
+offset_bottom = 200.0
 
-[node name="EndLabel" type="Label" parent="HUD"]
+[node name="VBox" type="VBoxContainer" parent="HUD/Stats"]
+layout_mode = 2
+
+[node name="ScoreLabel" type="Label" parent="HUD/Stats/VBox"]
+layout_mode = 2
+theme_type_variation = &"StatLabel"
+
+[node name="LengthLabel" type="Label" parent="HUD/Stats/VBox"]
+layout_mode = 2
+theme_type_variation = &"StatLabel"
+
+[node name="SpeedLabel" type="Label" parent="HUD/Stats/VBox"]
+layout_mode = 2
+theme_type_variation = &"StatLabel"
+
+[node name="TimeLabel" type="Label" parent="HUD/Stats/VBox"]
+layout_mode = 2
+theme_type_variation = &"StatLabel"
+
+[node name="Best" type="MarginContainer" parent="HUD"]
+anchor_left = 1.0
 anchor_right = 1.0
-offset_top = 556.0
-offset_bottom = 604.0
-theme_override_colors/font_color = Color(1, 0.78, 0.45, 1)
-theme_override_font_sizes/font_size = 28
-horizontal_alignment = 1
+offset_left = -360.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = 80.0
+grow_horizontal = 0
 
-[connection signal="status_changed" from="." to="HUD" method="_on_status_changed"]
+[node name="BestLabel" type="Label" parent="HUD/Best"]
+layout_mode = 2
+theme_type_variation = &"AccentLabel"
+horizontal_alignment = 2
+
+[node name="PauseMenu" parent="." instance=ExtResource("7_pause")]
+
+[node name="EndPanel" parent="." instance=ExtResource("8_end")]
+
+[connection signal="status_changed" from="." to="PauseMenu" method="_on_status_changed"]
+[connection signal="status_changed" from="." to="EndPanel" method="_on_status_changed"]
+[connection signal="stats_changed" from="." to="HUD" method="_on_stats_changed"]
+[connection signal="run_ended" from="." to="EndPanel" method="_on_run_ended"]
+[connection signal="resume_requested" from="PauseMenu" to="." method="_on_pause_resume"]
+[connection signal="restart_requested" from="PauseMenu" to="." method="_on_restart_requested"]
+[connection signal="main_menu_requested" from="PauseMenu" to="." method="_on_main_menu_requested"]
+[connection signal="retry_requested" from="EndPanel" to="." method="_on_restart_requested"]
+[connection signal="main_menu_requested" from="EndPanel" to="." method="_on_main_menu_requested"]

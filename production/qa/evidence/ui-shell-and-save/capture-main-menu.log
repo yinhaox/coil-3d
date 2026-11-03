@@ -1,0 +1,5 @@
+[capture] removed stale file: .\production\qa\evidence\ui-shell-and-save\main-menu.png
+[capture] target: production\qa\evidence\ui-shell-and-save\main-menu.png
+[capture] waiting up to 60s for the PNG
+$ godot --path . -- --studio-capture=.\production\qa\evidence\ui-shell-and-save\main-menu.png
+[capture] OK: production\qa\evidence\ui-shell-and-save\main-menu.png (25457 bytes)
