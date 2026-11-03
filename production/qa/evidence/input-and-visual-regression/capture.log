@@ -1,0 +1,6 @@
+[capture] removed stale file: .\production\qa\evidence\input-and-visual-regression\arena-initial.png
+[capture] target: production\qa\evidence\input-and-visual-regression\arena-initial.png
+[capture] waiting up to 60s for the PNG
+$ godot --path . -- --studio-capture=.\production\qa\evidence\input-and-visual-regression\arena-initial.png
+[capture] OK: production\qa\evidence\input-and-visual-regression\arena-initial.png (30737 bytes)
+CAPTURE_EXIT=0
