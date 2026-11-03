@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "classic-16",
+  "mode": "classic",
+  "size": { "columns": 16, "rows": 16 },
+  "obstacles": [],
+  "food_max": 1,
+  "initial_speed_cells_per_second": 6.0,
+  "max_speed_cells_per_second": 14.0,
+  "time_limit_seconds": null,
+  "start": { "cell": [8, 8], "direction": "east" }
+}
