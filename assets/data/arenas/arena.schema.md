@@ -38,7 +38,7 @@ are hard errors for that file.
 
 | File | Mode | Board | Obstacles | Food | Initial speed |
 |---|---|---|---|---|---|
-| `classic-12.json` | `classic` | 12×12 | 0 | 1 | 6.0 cells/s |
-| `classic-16.json` | `classic` | 16×16 | 0 | 1 | 6.0 cells/s |
+| `classic-12.json` | `classic` | 12×12 | 0 | 1 | 8.0 cells/s |
+| `classic-16.json` | `classic` | 16×16 | 0 | 1 | 8.0 cells/s |
 | `maze-01.json` | `maze` | 16×16 | 16 | 2 | 5.0 cells/s |
 | `time-attack-16.json` | `time_attack` | 16×16 | 0 | 3 | 7.0 cells/s, 90 s |
