@@ -98,7 +98,7 @@ PASS: input action snake_left is registered
 PASS: input action snake_right is registered
 PASS: snake_up binds both W and the up arrow
 PASS: the pause action is registered
-PASS: the event helper resolves snake_left to its first bound key
+PASS: the event helper resolves snake_left to a bound key
 PASS: the event helper reports an unknown action as KEY_NONE
 PASS: the event helper injects an up-arrow press and release
 PASS: the up arrow previews a north turn on its own frame
