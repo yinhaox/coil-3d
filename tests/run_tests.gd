@@ -12,6 +12,7 @@ const MAIN_SCRIPT = preload("res://src/main.gd")
 const MAIN_SCENE_PATH = "res://scenes/main.tscn"
 const GAME_SCENE_PATH := "res://scenes/game.tscn"
 const CAPTURE_SCRIPT_PATH = "res://addons/studio_capture/capture.gd"
+const INPUT_EVENTS := preload("res://tests/input_events.gd")
 
 const ARENAS_DIRECTORY := "res://assets/data/arenas"
 const ARENA_IDS: Array[String] = ["classic-12", "classic-16", "maze-01", "time-attack-16"]
@@ -21,6 +22,13 @@ var _failed := 0
 
 
 func _init() -> void:
+	# Input events are delivered by the running scene tree, so the checks start
+	# on the first processed frame instead of inside the main-loop constructor.
+	_run_tests.call_deferred()
+
+
+func _run_tests() -> void:
+	await process_frame
 	_test_boot_scene()
 	_test_game_scene()
 	_test_project_settings()
@@ -31,6 +39,7 @@ func _init() -> void:
 	_test_turn_preview()
 	_test_start_arena_selection()
 	_test_input_actions()
+	_test_real_input_events()
 	_test_arena_directory()
 	_test_arena_validation_errors()
 	_test_arena_directory_errors()
@@ -380,8 +389,162 @@ func _test_input_actions() -> void:
 		InputMap.action_get_events("snake_up").size() >= 2,
 		"snake_up binds both W and the up arrow"
 	)
-	_check(InputMap.has_action("snake_pause"), "the pause action is registered for the later UI story")
+	_check(InputMap.has_action("snake_pause"), "the pause action is registered")
 	controller.free()
+
+
+func _test_real_input_events() -> void:
+	_check(
+		INPUT_EVENTS.key_for_action("snake_left") == KEY_A,
+		"the event helper resolves snake_left to its first bound key"
+	)
+	_check(
+		INPUT_EVENTS.key_for_action("snake_missing") == KEY_NONE,
+		"the event helper reports an unknown action as KEY_NONE"
+	)
+
+	var game := _spawn_playing_game()
+	if game == null:
+		return
+	var session: SnakeSession = game._session
+	var start: Vector2i = session.head_cell()
+
+	_check(INPUT_EVENTS.tap_key(KEY_UP), "the event helper injects an up-arrow press and release")
+	_check(
+		game._snake_view.previewed_direction() == SnakeSession.NORTH,
+		"the up arrow previews a north turn on its own frame"
+	)
+	_check(
+		session.direction() == SnakeSession.EAST,
+		"the accepted turn leaves the logic heading east until the step"
+	)
+	_advance_game(game, session.step_duration_seconds())
+	_check(session.direction() == SnakeSession.NORTH, "the next logic step consumes the up-arrow turn")
+	_check(
+		session.head_cell() == start + SnakeSession.NORTH,
+		"the head moved north on the consumed turn"
+	)
+
+	_check(INPUT_EVENTS.tap_key(KEY_LEFT), "the event helper injects a left-arrow press and release")
+	_check(
+		game._snake_view.previewed_direction() == SnakeSession.WEST,
+		"the left arrow previews a west turn on its own frame"
+	)
+	_advance_game(game, session.step_duration_seconds())
+	_check(
+		session.direction() == SnakeSession.WEST,
+		"the snake head direction becomes west after the left-arrow step"
+	)
+	_check(
+		session.head_cell() == start + SnakeSession.NORTH + SnakeSession.WEST,
+		"the head moved west after the left-arrow step"
+	)
+
+	_check(INPUT_EVENTS.tap_action("snake_pause"), "the event helper injects the pause action by name")
+	_check(session.state() == SnakeSession.State.PAUSED, "the pause action pauses the run")
+	var paused_head: Vector2i = session.head_cell()
+	_check(_advance_game(game, 1.0) == 0, "a paused run performs no logic steps")
+	_check(session.head_cell() == paused_head, "a paused run keeps its head cell")
+	_check(INPUT_EVENTS.tap_action("snake_pause"), "the event helper injects the pause action again")
+	_check(
+		session.state() == SnakeSession.State.COUNTDOWN,
+		"pressing pause again resumes with the countdown"
+	)
+	_release_game(game)
+
+	var reverse_game := _spawn_playing_game()
+	if reverse_game == null:
+		return
+	var reverse_session: SnakeSession = reverse_game._session
+	var reverse_start: Vector2i = reverse_session.head_cell()
+	_check(INPUT_EVENTS.tap_key(KEY_UP), "the up arrow is injected before the reverse check")
+	_check(
+		reverse_game._snake_view.previewed_direction() == SnakeSession.NORTH,
+		"the up arrow is accepted in the current logic step"
+	)
+	_check(INPUT_EVENTS.tap_key(KEY_DOWN), "the down arrow is injected inside the same logic step")
+	_check(
+		reverse_game._snake_view.previewed_direction() == SnakeSession.NORTH,
+		"the reverse down arrow does not replace the accepted turn"
+	)
+	_check(
+		reverse_session.direction() == SnakeSession.EAST,
+		"the reverse down arrow leaves the logic heading east"
+	)
+	_advance_game(reverse_game, reverse_session.step_duration_seconds())
+	_check(
+		reverse_session.direction() == SnakeSession.NORTH,
+		"the step follows the accepted up turn, not the reverse"
+	)
+	_check(
+		reverse_session.head_cell() == reverse_start + SnakeSession.NORTH,
+		"the snake does not make a 180-degree move"
+	)
+	_release_game(reverse_game)
+
+	var over_game := _spawn_playing_game()
+	if over_game == null:
+		return
+	var over_session: SnakeSession = over_game._session
+	_check(INPUT_EVENTS.tap_key(KEY_UP), "the up arrow steers the snake toward the north wall")
+	var steps := 0
+	while over_session.state() == SnakeSession.State.PLAYING and steps < SnakeSession.INITIAL_LENGTH * 4:
+		_advance_game(over_game, over_session.step_duration_seconds())
+		steps += 1
+	_check(over_session.state() == SnakeSession.State.OVER, "steering into the north wall ends the run")
+	_check(
+		over_session.end_reason() == SnakeSession.EndReason.WALL,
+		"the ended run reports a wall collision"
+	)
+	var over_head: Vector2i = over_session.head_cell()
+	var over_direction: Vector2i = over_session.direction()
+	_check(INPUT_EVENTS.tap_key(KEY_LEFT), "the event helper still injects keys after the run ended")
+	_check(
+		INPUT_EVENTS.tap_action("snake_pause"),
+		"the event helper still injects pause after the run ended"
+	)
+	_check(over_session.state() == SnakeSession.State.OVER, "keys do not change the over state")
+	_check(over_session.head_cell() == over_head, "keys do not move the snake after the run ended")
+	_check(
+		over_session.direction() == over_direction,
+		"keys do not change the heading after the run ended"
+	)
+	_check(_advance_game(over_game, 1.0) == 0, "an over run performs no more logic steps")
+	_release_game(over_game)
+
+
+## Advance the real game scene the way _process() does, including the controller's
+## step callback, so the presentation snapshot keeps up with the logic.
+func _advance_game(game: GameController, delta_seconds: float) -> int:
+	return game._driver.advance(delta_seconds, game._on_logic_step)
+
+
+## Instantiate the real game scene inside the running tree and skip its opening
+## countdown, so injected keyboard events reach GameController._unhandled_input().
+func _spawn_playing_game() -> GameController:
+	var packed := load(GAME_SCENE_PATH) as PackedScene
+	if packed == null:
+		_check(false, "scenes/game.tscn loads for the input-event checks")
+		return null
+	var game := packed.instantiate() as GameController
+	if game == null:
+		_check(false, "scenes/game.tscn instantiates the game controller")
+		return null
+	root.add_child(game)
+	if game._session == null:
+		_check(false, "the game controller starts a session for the input-event checks")
+		_release_game(game)
+		return null
+	game._session.advance_time(SnakeSession.START_COUNTDOWN_SECONDS)
+	return game
+
+
+func _release_game(game: GameController) -> void:
+	if game == null:
+		return
+	if game.is_inside_tree():
+		root.remove_child(game)
+	game.free()
 
 
 func _test_project_settings() -> void:
