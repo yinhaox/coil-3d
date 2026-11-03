@@ -10,6 +10,7 @@ extends SceneTree
 
 const MAIN_SCRIPT = preload("res://src/main.gd")
 const MAIN_SCENE_PATH = "res://scenes/main.tscn"
+const GAME_SCENE_PATH := "res://scenes/game.tscn"
 const CAPTURE_SCRIPT_PATH = "res://addons/studio_capture/capture.gd"
 
 const ARENAS_DIRECTORY := "res://assets/data/arenas"
@@ -20,9 +21,15 @@ var _failed := 0
 
 
 func _init() -> void:
-	_test_main_helpers()
-	_test_main_scene()
+	_test_boot_scene()
+	_test_game_scene()
 	_test_project_settings()
+	_test_grid_space()
+	_test_iso_camera()
+	_test_session_driver()
+	_test_snake_view()
+	_test_start_arena_selection()
+	_test_input_actions()
 	_test_arena_directory()
 	_test_arena_validation_errors()
 	_test_arena_directory_errors()
@@ -53,14 +60,9 @@ func _check(condition: bool, label: String) -> void:
 		printerr("FAIL: %s" % label)
 
 
-func _test_main_helpers() -> void:
-	_check(MAIN_SCRIPT.title_text() == "Game Studio", "main.title_text() returns the studio title")
-	_check(MAIN_SCRIPT.status_text(0) == "Game Studio (0 frames)", "main.status_text(0) formats zero frames")
-	_check(MAIN_SCRIPT.status_text(7) == "Game Studio (7 frames)", "main.status_text(7) formats seven frames")
-	_check(MAIN_SCRIPT.status_text(-3) == "Game Studio (0 frames)", "main.status_text() clamps negative frames")
-
-
-func _test_main_scene() -> void:
+func _test_boot_scene() -> void:
+	_check(MAIN_SCRIPT.game_scene_path() == GAME_SCENE_PATH, "main.gd loads scenes/game.tscn")
+	_check(ResourceLoader.exists(GAME_SCENE_PATH), "scenes/game.tscn exists")
 	_check(ResourceLoader.exists(MAIN_SCENE_PATH), "scenes/main.tscn exists")
 
 	var packed := load(MAIN_SCENE_PATH) as PackedScene
@@ -73,17 +75,252 @@ func _test_main_scene() -> void:
 	if root == null:
 		_check(false, "scenes/main.tscn instantiates")
 		return
-	_check(root is Node2D, "main scene root is a Node2D")
+	_check(root is Node3D, "main scene root is a Node3D")
 	_check(str(root.name) == "Main", "main scene root is named Main")
 
 	var attached := root.get_script() as Script
 	_check(attached != null and attached.resource_path == "res://src/main.gd", "main scene root runs src/main.gd")
-
-	var label := root.get_node_or_null("Title") as Label
-	_check(label != null, "main scene has a Title label")
-	if label != null:
-		_check(label.text == "Game Studio", "Title label reads Game Studio")
+	_check(root.get_child_count() == 0, "main scene keeps no playfield of its own; it loads game.tscn")
 	root.free()
+
+
+func _test_game_scene() -> void:
+	var packed := load(GAME_SCENE_PATH) as PackedScene
+	if packed == null:
+		_check(false, "scenes/game.tscn loads as a PackedScene")
+		return
+	_check(true, "scenes/game.tscn loads as a PackedScene")
+
+	var root := packed.instantiate()
+	if root == null:
+		_check(false, "scenes/game.tscn instantiates")
+		return
+	_check(root is Node3D, "game scene root is a Node3D")
+	_check(str(root.name) == "Game", "game scene root is named Game")
+
+	var controller := root.get_script() as Script
+	_check(
+		controller != null and controller.resource_path == "res://src/game/game_controller.gd",
+		"game scene root runs the game controller"
+	)
+	var camera := root.get_node_or_null("Camera") as Camera3D
+	_check(camera != null, "game scene has a Camera")
+	if camera != null:
+		var camera_script := camera.get_script() as Script
+		_check(
+			camera_script != null and camera_script.resource_path == "res://src/game/iso_camera.gd",
+			"Camera runs the isometric camera script"
+		)
+		_check(camera.projection == Camera3D.PROJECTION_ORTHOGONAL, "Camera uses the orthogonal projection")
+	for node_path in ["ArenaView", "SnakeView", "FoodView", "HUD"]:
+		_check(root.get_node_or_null(node_path) != null, "game scene has a %s node" % node_path)
+	var hud := root.get_node_or_null("HUD")
+	if hud != null:
+		_check(hud.get_node_or_null("ScoreLabel") != null, "HUD has a score label")
+		_check(hud.get_node_or_null("EndLabel") != null, "HUD has the one-line end label")
+	root.free()
+
+
+func _test_grid_space() -> void:
+	var north_west := GridSpace.cell_to_world(Vector2i(0, 0), 16, 16)
+	_check(
+		is_equal_approx(north_west.x, -7.5) and is_equal_approx(north_west.z, -7.5),
+		"cell (0,0) maps to the arena corner at -7.5"
+	)
+	_check(is_equal_approx(north_west.y, 0.0), "cells map onto the floor plane")
+	var south_east := GridSpace.cell_to_world(Vector2i(15, 15), 16, 16)
+	_check(
+		is_equal_approx(south_east.x, 7.5) and is_equal_approx(south_east.z, 7.5),
+		"cell (15,15) maps to +7.5"
+	)
+	var center := GridSpace.cell_to_world(Vector2i(8, 8), 16, 16)
+	_check(
+		is_equal_approx(center.x, 0.5) and is_equal_approx(center.z, 0.5),
+		"cell (8,8) sits just east of the arena center"
+	)
+	var small := GridSpace.cell_to_world(Vector2i(0, 0), 12, 12)
+	_check(
+		is_equal_approx(small.x, -5.5) and is_equal_approx(small.z, -5.5),
+		"a 12x12 arena starts at -5.5"
+	)
+	var round_trip := true
+	for cell in [Vector2i(0, 0), Vector2i(3, 7), Vector2i(15, 15)]:
+		var world := GridSpace.cell_to_world(cell, 16, 16)
+		if GridSpace.world_to_cell(world, 16, 16) != cell:
+			round_trip = false
+	_check(round_trip, "world_to_cell inverts cell_to_world")
+	_check(
+		GridSpace.world_to_cell(Vector3(20, 0, 0), 16, 16) == Vector2i(-1, -1),
+		"world_to_cell reports out-of-arena positions as (-1, -1)"
+	)
+
+
+func _test_iso_camera() -> void:
+	_check(is_equal_approx(IsoCamera.YAW_DEGREES, 45.0), "camera yaw starts at 45 degrees")
+	_check(is_equal_approx(IsoCamera.PITCH_DEGREES, 35.264), "camera pitch is 35.264 degrees")
+	var fit := IsoCamera.fit_ortho_size(16, 16)
+	_check(absf(fit - 16.07) < 0.05, "16x16 fit ortho size is 16.07")
+	var small_fit := IsoCamera.fit_ortho_size(12, 12)
+	_check(absf(small_fit - 12.80) < 0.05, "12x12 fit ortho size is 12.80")
+	_check(fit > 16.0, "fit leaves a margin around the walls")
+	_check(
+		is_equal_approx(IsoCamera.clamp_ortho_size(1.0, 16, 16), fit),
+		"zoom never goes below the whole-arena fit"
+	)
+	_check(
+		is_equal_approx(
+			IsoCamera.clamp_ortho_size(100.0, 16, 16), fit * IsoCamera.MAX_ZOOM_FACTOR
+		),
+		"zoom is capped at twice the fit"
+	)
+	_check(
+		is_equal_approx(IsoCamera.clamp_ortho_size(fit * 1.5, 16, 16), fit * 1.5),
+		"zoom keeps a value inside the range"
+	)
+	var narrow_fit := IsoCamera.fit_ortho_size(16, 16, 800.0 / 600.0)
+	_check(narrow_fit > fit, "a 4:3 viewport needs a larger ortho size than 16:9")
+	_check(is_equal_approx(IsoCamera.yaw_degrees_after_turn(45.0, 1), 135.0), "E turns the camera 90 degrees")
+	_check(is_equal_approx(IsoCamera.yaw_degrees_after_turn(45.0, -1), 315.0), "Q turns the camera 90 degrees the other way")
+	_check(is_equal_approx(IsoCamera.yaw_degrees_after_turn(315.0, 1), 45.0), "the fourth quarter turn wraps back to 45")
+
+
+func _test_session_driver() -> void:
+	var loaded := ArenaData.load_directory(ARENAS_DIRECTORY)
+	if not loaded.is_ok():
+		_check(false, "arenas load before the driver checks")
+		return
+	var arena: ArenaData = loaded.arena_for_mode(ArenaData.MODE_CLASSIC)
+	if arena == null:
+		_check(false, "a Classic arena exists for the driver checks")
+		return
+	var session := SnakeSession.new(arena, 7)
+	session.start()
+	var driver := SessionDriver.new(session)
+	var head_before := session.head_cell()
+	_check(driver.advance(0.5) == 0, "the first half second only ticks the countdown")
+	_check(session.state() == SnakeSession.State.COUNTDOWN, "the session is still counting down")
+	_check(driver.advance(0.5) == 0, "the second half second finishes the countdown without a step")
+	_check(session.state() == SnakeSession.State.PLAYING, "the countdown hands over to playing")
+	_check(session.head_cell() == head_before, "the countdown moves nothing")
+	_check(driver.alpha() == 0.0, "a fresh step has no interpolation remainder")
+	_check(driver.advance(0.2) == 1, "0.2 s at 6 cells/s runs exactly one step")
+	_check(
+		session.head_cell() == head_before + SnakeSession.EAST,
+		"the driver advanced the session one cell"
+	)
+	_check(absf(driver.alpha() - 0.2) < 0.01, "alpha carries the unused part of the step")
+
+	var burst := SnakeSession.new(arena, 7)
+	burst.start()
+	var burst_driver := SessionDriver.new(burst)
+	burst_driver.advance(SnakeSession.START_COUNTDOWN_SECONDS)
+	_check(
+		burst_driver.advance(2.0) == SessionDriver.MAX_STEPS_PER_FRAME,
+		"a long frame runs at most four steps"
+	)
+	_check(burst_driver.alpha() <= 1.0, "the dropped time leaves alpha within 0..1")
+
+	var paused := _start_session(arena)
+	var paused_driver := SessionDriver.new(paused)
+	paused.pause()
+	var paused_head := paused.head_cell()
+	_check(paused_driver.advance(1.0) == 0, "a paused session runs no steps")
+	_check(paused.head_cell() == paused_head, "a paused session does not move")
+
+	var wall_arena := _arena_from(_arena_dict({"start": {"cell": [15, 8], "direction": "east"}}))
+	if wall_arena != null:
+		var over_session := SnakeSession.new(wall_arena, 3)
+		over_session.start()
+		over_session.advance_time(SnakeSession.START_COUNTDOWN_SECONDS)
+		var over_driver := SessionDriver.new(over_session)
+		over_driver.advance(1.0)
+		var over_head := over_session.head_cell()
+		_check(over_session.state() == SnakeSession.State.OVER, "the run ends on the wall")
+		_check(over_driver.advance(1.0) == 0, "an ended session runs no further steps")
+		_check(over_session.head_cell() == over_head, "an ended session keeps its last cell")
+		_check(over_driver.alpha() == 0.0, "an ended session clears the interpolation remainder")
+
+
+func _test_snake_view() -> void:
+	_check(
+		is_equal_approx(SnakeView.turn_tween_seconds(1.0 / 6.0), SnakeView.TURN_TWEEN_SECONDS),
+		"a slow step uses the full turn tween"
+	)
+	_check(
+		is_equal_approx(SnakeView.turn_tween_seconds(0.05), 0.05),
+		"a fast step shortens the turn tween to the step"
+	)
+	_check(is_equal_approx(SnakeView.turn_tween_seconds(0.0), 0.0), "a zero step has no turn tween")
+	_check(is_equal_approx(SnakeView.yaw_for_direction(SnakeSession.NORTH), 0.0), "north points the head at yaw zero")
+	_check(
+		is_equal_approx(SnakeView.yaw_for_direction(SnakeSession.EAST), -PI / 2.0),
+		"east turns the head to -90 degrees"
+	)
+	_check(
+		is_equal_approx(SnakeView.yaw_for_direction(SnakeSession.WEST), PI / 2.0),
+		"west turns the head to +90 degrees"
+	)
+	_check(
+		absf(absf(SnakeView.yaw_for_direction(SnakeSession.SOUTH)) - PI) < 0.001,
+		"south turns the head 180 degrees"
+	)
+	var previous: Array[Vector2i] = [Vector2i(1, 1), Vector2i(0, 1)]
+	var current: Array[Vector2i] = [Vector2i(2, 1), Vector2i(1, 1)]
+	var start := GridSpace.cell_to_world(previous[0], 4, 4)
+	var target := GridSpace.cell_to_world(current[0], 4, 4)
+	var midpoint := SnakeView.segment_world_position(0, previous, current, 0.5, 4, 4)
+	_check(midpoint.is_equal_approx(start.lerp(target, 0.5)), "the head segment sits halfway between cells")
+	var tail := SnakeView.segment_world_position(1, previous, current, 0.5, 4, 4)
+	_check(
+		tail.is_equal_approx(
+			GridSpace.cell_to_world(previous[1], 4, 4).lerp(
+				GridSpace.cell_to_world(current[1], 4, 4), 0.5
+			)
+		),
+		"the tail segment interpolates too"
+	)
+	_check(
+		SnakeView.segment_world_position(0, previous, current, 2.0, 4, 4).is_equal_approx(target),
+		"alpha is clamped at the current cell"
+	)
+	var grown: Array[Vector2i] = [Vector2i(2, 1), Vector2i(1, 1), Vector2i(0, 1)]
+	_check(
+		SnakeView.segment_world_position(2, previous, grown, 0.5, 4, 4).is_equal_approx(
+			GridSpace.cell_to_world(grown[2], 4, 4)
+		),
+		"the new tail segment stays on its cell during growth"
+	)
+
+
+func _test_start_arena_selection() -> void:
+	var loaded := ArenaData.load_directory(ARENAS_DIRECTORY)
+	if not loaded.is_ok():
+		_check(false, "arenas load before the start-arena checks")
+		return
+	var default_arena := GameController.select_start_arena(loaded, "")
+	_check(
+		default_arena != null and default_arena.id == "classic-12",
+		"startup picks the first Classic arena"
+	)
+	var maze := GameController.select_start_arena(loaded, "maze-01")
+	_check(maze != null and maze.id == "maze-01", "--arena selects another arena by id")
+	_check(
+		GameController.select_start_arena(loaded, "nope") == null,
+		"an unknown arena id is reported as no arena"
+	)
+
+
+func _test_input_actions() -> void:
+	var controller := GameController.new()
+	controller._register_actions()
+	for action: String in ["snake_up", "snake_down", "snake_left", "snake_right"]:
+		_check(InputMap.has_action(action), "input action %s is registered" % action)
+	_check(
+		InputMap.action_get_events("snake_up").size() >= 2,
+		"snake_up binds both W and the up arrow"
+	)
+	_check(InputMap.has_action("snake_pause"), "the pause action is registered for the later UI story")
+	controller.free()
 
 
 func _test_project_settings() -> void:
