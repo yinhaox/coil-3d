@@ -28,6 +28,7 @@ func _init() -> void:
 	_test_iso_camera()
 	_test_session_driver()
 	_test_snake_view()
+	_test_turn_preview()
 	_test_start_arena_selection()
 	_test_input_actions()
 	_test_arena_directory()
@@ -35,6 +36,7 @@ func _init() -> void:
 	_test_arena_directory_errors()
 	_test_snake_start_and_movement()
 	_test_turn_queue()
+	_test_immediate_turn_input()
 	_test_food_and_growth()
 	_test_collisions()
 	_test_speed_cap()
@@ -290,6 +292,61 @@ func _test_snake_view() -> void:
 		),
 		"the new tail segment stays on its cell during growth"
 	)
+
+
+func _test_turn_preview() -> void:
+	_check(
+		is_equal_approx(SnakeView.TURN_TWEEN_SECONDS, 0.10),
+		"the turn tween stays at 0.10 seconds"
+	)
+	var view := SnakeView.new()
+	view._build_body()
+	var previous: Array[Vector2i] = [Vector2i(1, 1), Vector2i(0, 1)]
+	var current: Array[Vector2i] = [Vector2i(2, 1), Vector2i(1, 1)]
+	view.apply_step(previous, current, SnakeSession.EAST, SnakeSession.EAST, 1.0 / 6.0, false)
+	var east_yaw := view.displayed_yaw()
+	view.preview_turn(SnakeSession.NORTH, 1.0 / 6.0)
+	_check(
+		view.previewed_direction() == SnakeSession.NORTH,
+		"an accepted turn is previewed on the input frame"
+	)
+	_check(
+		is_equal_approx(view.displayed_yaw(), east_yaw),
+		"the preview starts from the heading currently on screen"
+	)
+	_check(is_equal_approx(view.turn_progress(), 0.0), "the preview tween starts at zero progress")
+	view.advance_turn(1.0 / 60.0)
+	_check(
+		view.turn_progress() > 0.0 and view.turn_progress() < 1.0,
+		"one 60 Hz frame already shows a visible turn"
+	)
+	_check(
+		absf(view.turn_progress() - (1.0 / 60.0) / SnakeView.TURN_TWEEN_SECONDS) < 0.001,
+		"one frame advances the 0.10 s tween by about 1/6"
+	)
+	view.preview_turn(SnakeSession.WEST, 1.0 / 6.0)
+	_check(
+		view.previewed_direction() == SnakeSession.NORTH,
+		"a second input before the step does not replace the pending preview"
+	)
+	view.advance_turn(0.10)
+	_check(view.turn_progress() == 1.0, "the preview finishes within 0.10 seconds")
+	_check(absf(view.displayed_yaw()) < 0.001, "the previewed head faces north before the step")
+	var north: Array[Vector2i] = [Vector2i(2, 0), Vector2i(2, 1)]
+	view.apply_step(previous, north, SnakeSession.EAST, SnakeSession.NORTH, 1.0 / 6.0, false)
+	_check(view.previewed_direction() == Vector2i.ZERO, "the consuming step clears the preview")
+	_check(absf(view.displayed_yaw()) < 0.001, "the consuming step does not snap the head back east")
+	view.apply_step(north, current, SnakeSession.NORTH, SnakeSession.EAST, 1.0 / 6.0, false)
+	_check(
+		is_equal_approx(view.turn_progress(), 0.0),
+		"a turn seen only at the step still starts its tween from zero"
+	)
+	view.advance_turn(0.05)
+	_check(
+		is_equal_approx(view.turn_progress(), 0.5),
+		"a step-started turn still completes in 0.10 seconds"
+	)
+	view.free()
 
 
 func _test_start_arena_selection() -> void:
@@ -588,6 +645,28 @@ func _test_turn_queue() -> void:
 	reversing.turn(SnakeSession.SOUTH)
 	reversing.step()
 	_check(reversing.state() == SnakeSession.State.PLAYING, "two fast reverse inputs do not kill the snake")
+
+
+func _test_immediate_turn_input() -> void:
+	var arena := _load_arena("classic-16.json")
+	if arena == null:
+		return
+	var session := _start_session(arena)
+	var driver := SessionDriver.new(session)
+	_check(driver.advance(0.05) == 0, "0.05 s into a step runs no logic step yet")
+	_check(session.direction() == SnakeSession.EAST, "the snake still heads east before the step ends")
+	_check(session.turn(SnakeSession.NORTH), "a turn pressed mid-step is accepted immediately")
+	_check(
+		session.direction() == SnakeSession.EAST,
+		"the accepted input does not change the logic direction before the step"
+	)
+	_check(session.head_cell() == arena.start_cell, "the accepted input moves nothing before the step")
+	_check(driver.advance(0.12) == 1, "the next step still runs on the unchanged cadence")
+	_check(session.direction() == SnakeSession.NORTH, "the next move follows the pressed direction")
+	_check(
+		session.head_cell() == arena.start_cell + SnakeSession.NORTH,
+		"the next move goes north instead of east"
+	)
 
 
 func _test_food_and_growth() -> void:

@@ -1,0 +1,5 @@
+[capture] target: production\qa\evidence\immediate-turn-input\turning.png
+[capture] user arguments: --scenario=turning
+[capture] waiting up to 60s for the PNG
+$ godot --path . -- --studio-capture=C:\Users\yinha\.dsh\state\superagent-coil\work\immediate-turn-input-e0c5f55de51a\production\qa\evidence\immediate-turn-input\turning.png --scenario=turning
+[capture] OK: production\qa\evidence\immediate-turn-input\turning.png (30302 bytes)
