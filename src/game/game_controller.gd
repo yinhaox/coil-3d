@@ -95,6 +95,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if not (event is InputEventKey) or not event.pressed or event.echo:
 		return
+	if event.is_action_pressed(PAUSE_ACTION):
+		_toggle_pause()
+		get_viewport().set_input_as_handled()
+		return
 	for action: String in TURN_ACTIONS.keys():
 		if event.is_action_pressed(action):
 			var direction: Vector2i = TURN_ACTIONS[action]
@@ -104,6 +108,17 @@ func _unhandled_input(event: InputEvent) -> void:
 				_snake_view.preview_turn(direction, _session.step_duration_seconds())
 			get_viewport().set_input_as_handled()
 			return
+
+
+## The registered pause action toggles between playing and paused. The logic
+## state owns the freeze (design/core-rules.md rule 10); the pause menu and the
+## scene-tree pause are part of the later UI story.
+func _toggle_pause() -> void:
+	match _session.state():
+		SnakeSession.State.PLAYING:
+			_session.pause()
+		SnakeSession.State.PAUSED:
+			_session.resume()
 
 
 ## Startup arena: the requested id, else the first Classic arena by file name.
