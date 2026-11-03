@@ -15,7 +15,7 @@ extends RefCounted
 ## - OVER: freeze and drop the remainder, so the renderer cannot slide towards
 ##   a move that never happened.
 
-const MAX_STEPS_PER_FRAME := 4
+const MAX_STEPS_PER_FRAME := 40
 
 var _session: SnakeSession
 var _accumulator := 0.0
