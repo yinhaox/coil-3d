@@ -52,3 +52,5 @@ Issue: https://github.com/yinhaox/coil-3d/issues/7
 ## Evidence
 
 - `production/qa/evidence/arena-view-3d/index.md` — Run result: OBSERVED — 启动即见 3D 场地/蛇/食物/等距相机，吃到食物后分数 10 且蛇身变长，撞墙后停止并显示一行结束提示
+- 截图：`initial.png`、`eaten.png`、`turning.png`、`end-prompt.png`、`maze-obstacles.png`（均来自本机 `capture_command`，1152x648）
+- 日志：`check.log`（退出码 0）、`test.log`（257 checks passed）、`capture.log`、`run.log`

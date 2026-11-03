@@ -1,0 +1,25 @@
+[capture] target: production\qa\evidence\arena-view-3d\initial.png
+[capture] user arguments: --scenario=initial
+[capture] waiting up to 60s for the PNG
+$ godot --path . -- --studio-capture=.\production\qa\evidence\arena-view-3d\initial.png --scenario=initial
+[capture] OK: production\qa\evidence\arena-view-3d\initial.png (30614 bytes)
+[capture] target: production\qa\evidence\arena-view-3d\eaten.png
+[capture] user arguments: --scenario=eaten
+[capture] waiting up to 60s for the PNG
+$ godot --path . -- --studio-capture=.\production\qa\evidence\arena-view-3d\eaten.png --scenario=eaten
+[capture] OK: production\qa\evidence\arena-view-3d\eaten.png (30711 bytes)
+[capture] target: production\qa\evidence\arena-view-3d\turning.png
+[capture] user arguments: --scenario=turning
+[capture] waiting up to 60s for the PNG
+$ godot --path . -- --studio-capture=.\production\qa\evidence\arena-view-3d\turning.png --scenario=turning
+[capture] OK: production\qa\evidence\arena-view-3d\turning.png (30480 bytes)
+[capture] target: production\qa\evidence\arena-view-3d\end-prompt.png
+[capture] user arguments: --scenario=over
+[capture] waiting up to 60s for the PNG
+$ godot --path . -- --studio-capture=.\production\qa\evidence\arena-view-3d\end-prompt.png --scenario=over
+[capture] OK: production\qa\evidence\arena-view-3d\end-prompt.png (35035 bytes)
+[capture] target: production\qa\evidence\arena-view-3d\maze-obstacles.png
+[capture] user arguments: --arena=maze-01
+[capture] waiting up to 60s for the PNG
+$ godot --path . -- --studio-capture=.\production\qa\evidence\arena-view-3d\maze-obstacles.png --arena=maze-01
+[capture] OK: production\qa\evidence\arena-view-3d\maze-obstacles.png (39763 bytes)
