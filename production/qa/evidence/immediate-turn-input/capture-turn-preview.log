@@ -1,0 +1,6 @@
+[capture] removed stale file: .\production\qa\evidence\immediate-turn-input\turn-preview.png
+[capture] target: production\qa\evidence\immediate-turn-input\turn-preview.png
+[capture] user arguments: --scenario=turn-preview
+[capture] waiting up to 60s for the PNG
+$ godot --path . -- --studio-capture=.\production\qa\evidence\immediate-turn-input\turn-preview.png --scenario=turn-preview
+[capture] OK: production\qa\evidence\immediate-turn-input\turn-preview.png (30221 bytes)
