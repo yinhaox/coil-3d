@@ -1,0 +1,4 @@
+[capture] target: production\qa\evidence\classic-speed-tune\initial.png
+[capture] waiting up to 60s for the PNG
+$ godot --path . -- --studio-capture=.\production\qa\evidence\classic-speed-tune\initial.png
+[capture] OK: production\qa\evidence\classic-speed-tune\initial.png (30556 bytes)

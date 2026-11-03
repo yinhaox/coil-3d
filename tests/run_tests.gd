@@ -205,12 +205,16 @@ func _test_session_driver() -> void:
 	_check(session.state() == SnakeSession.State.PLAYING, "the countdown hands over to playing")
 	_check(session.head_cell() == head_before, "the countdown moves nothing")
 	_check(driver.alpha() == 0.0, "a fresh step has no interpolation remainder")
-	_check(driver.advance(0.2) == 1, "0.2 s at 6 cells/s runs exactly one step")
+	var step_seconds := session.step_duration_seconds()
+	_check(driver.advance(0.2) == 1, "0.2 s at the Classic speed runs exactly one step")
 	_check(
 		session.head_cell() == head_before + SnakeSession.EAST,
 		"the driver advanced the session one cell"
 	)
-	_check(absf(driver.alpha() - 0.2) < 0.01, "alpha carries the unused part of the step")
+	_check(
+		absf(driver.alpha() - fmod(0.2, step_seconds) / step_seconds) < 0.01,
+		"alpha carries the unused part of the step"
+	)
 
 	var burst := SnakeSession.new(arena, 7)
 	burst.start()
@@ -431,13 +435,15 @@ func _test_arena_directory() -> void:
 	_check(classic.columns == 12 and classic.rows == 12, "classic-12 is a 12x12 board")
 	_check(classic.obstacles.is_empty(), "classic-12 has no obstacles")
 	_check(classic.food_max == 1, "classic-12 spawns one food")
+	_check(is_equal_approx(classic.initial_speed, 8.0), "classic-12 starts at 8.0 cells/s")
+	_check(is_equal_approx(classic.max_speed, 16.0), "classic-12 caps at 16.0 cells/s")
 
 	var classic16: ArenaData = by_id["classic-16"]
 	_check(classic16.columns == 16 and classic16.rows == 16, "classic-16 is a 16x16 board")
 	_check(classic16.start_cell == Vector2i(8, 8), "classic-16 starts at [8, 8]")
 	_check(classic16.start_direction == SnakeSession.EAST, "classic-16 starts facing east")
-	_check(is_equal_approx(classic16.initial_speed, 6.0), "classic-16 starts at 6.0 cells/s")
-	_check(is_equal_approx(classic16.max_speed, 14.0), "classic-16 caps at 14.0 cells/s")
+	_check(is_equal_approx(classic16.initial_speed, 8.0), "classic-16 starts at 8.0 cells/s")
+	_check(is_equal_approx(classic16.max_speed, 16.0), "classic-16 caps at 16.0 cells/s")
 	_check(not classic16.has_time_limit, "classic-16 has no time limit")
 
 	var maze: ArenaData = by_id["maze-01"]
