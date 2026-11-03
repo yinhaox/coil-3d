@@ -44,6 +44,8 @@ Issue: https://github.com/yinhaox/coil-3d/issues/7
 
 - `Q`/`E` 的四个 90° 固定机位来自 issue 验收标准，是对 design/camera-and-presentation.md 第 19 行
   “固定视角，不允许玩家自由旋转”的补充解释：只有四档离散朝向，没有连续旋转。该补充由 tech-director 记录。
+- Classic 场地按 design/game-modes.md 规则 2 没有障碍；障碍渲染由证据 `maze-obstacles.png`
+  （`--arena=maze-01`）证明，默认启动仍是第一个 Classic 场地 `classic-12`。
 - 转向补间取 issue 的 0.10 秒（设计文档写 0.08 秒，属同一 0.03–0.15 秒区间；issue 的 0.1–0.15 秒优先）。
 - 方向键按世界轴映射（W = north = -Z），与 design/core-rules.md 第 21 行的提案一致，待试玩确认。
 
