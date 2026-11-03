@@ -1,0 +1,13 @@
+[run] user arguments: --fps-log=Z:/no/such/directory/fps.log --quit-after=2
+[run] launching the game window; close it to return control
+$ godot --path . -- --fps-log=Z:/no/such/directory/fps.log --quit-after=2
+Godot Engine v4.7.2.stable.steam.ed1daf0bf - https://godotengine.org
+OpenGL API 3.3.0 NVIDIA 616.56 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 3070 Ti Laptop GPU
+
+WARNING: fps_log: cannot write 'Z:/no/such/directory/fps.log' (error 7); frame sampling stays off
+   at: push_warning (core/variant/variant_utility.cpp:1033)
+   GDScript backtrace (most recent call first):
+       [0] _begin (res://src/perf/fps_log.gd:144)
+       [1] from_user_args (res://src/perf/fps_log.gd:39)
+       [2] _ready (res://src/main.gd:22)
+[run] Godot exited with code 0

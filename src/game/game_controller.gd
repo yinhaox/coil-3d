@@ -35,7 +35,9 @@ const TURNING_TWEEN_PROGRESS := 0.5
 const MAX_FOOD_PATH_STEPS := 256
 const NO_STAGED_ALPHA := -1.0
 const INVALID_STATUS := Vector3i(-1, -1, -1)
-const USER_ARGUMENT_KEYS: Array[String] = ["arena", "scenario", "seed"]
+# Process-level flags are read by the boot entry (src/main.gd); they are listed
+# here only so the controller does not report them as unknown arguments.
+const USER_ARGUMENT_KEYS: Array[String] = ["arena", "scenario", "seed", "fps-log", "quit-after"]
 const CAPTURE_ARGUMENT := "studio-capture"
 
 @onready var _camera: IsoCamera = $Camera
