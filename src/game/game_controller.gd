@@ -28,6 +28,7 @@ const PAUSE_KEYS: Array[int] = [KEY_ESCAPE]
 const SCENARIO_INITIAL := "initial"
 const SCENARIO_EATEN := "eaten"
 const SCENARIO_TURNING := "turning"
+const SCENARIO_TURN_PREVIEW := "turn-preview"
 const SCENARIO_OVER := "over"
 const TURNING_ALPHA := 0.45
 const TURNING_TWEEN_PROGRESS := 0.5
@@ -96,7 +97,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	for action: String in TURN_ACTIONS.keys():
 		if event.is_action_pressed(action):
-			_session.turn(TURN_ACTIONS[action])
+			var direction: Vector2i = TURN_ACTIONS[action]
+			if _session.turn(direction):
+				# Start the head turn on this frame; the logic step that consumes
+				# the queued turn still decides when the cell advances.
+				_snake_view.preview_turn(direction, _session.step_duration_seconds())
 			get_viewport().set_input_as_handled()
 			return
 
@@ -191,6 +196,10 @@ func _stage_scenario(scenario_name: String) -> void:
 			_capture_frozen = true
 			_staged_alpha = TURNING_ALPHA
 			_stage_turning()
+		SCENARIO_TURN_PREVIEW:
+			_capture_frozen = true
+			_staged_alpha = TURNING_ALPHA
+			_stage_turn_preview()
 		SCENARIO_OVER:
 			_capture_frozen = true
 			_staged_alpha = 1.0
@@ -218,6 +227,23 @@ func _stage_turning() -> void:
 	_session.turn(SnakeSession.SOUTH)
 	_step_once()
 	_snake_view.stage_turn_progress(TURNING_TWEEN_PROGRESS)
+
+
+## The input frame: the turn is accepted and the head starts turning now, while
+## the body is still in the current east step. The tween is held before the step
+## ends so a startup capture can show the head already facing the new direction.
+func _stage_turn_preview() -> void:
+	_advance_countdown()
+	_step_once()
+	_step_once()
+	if _session.turn(SnakeSession.NORTH):
+		_snake_view.preview_turn(SnakeSession.NORTH, _session.step_duration_seconds())
+	# The preview started at this step's start, so at TURNING_ALPHA it has played
+	# alpha x step_duration of its 0.10 s tween.
+	var preview_progress := (
+		TURNING_ALPHA * _session.step_duration_seconds() / SnakeView.TURN_TWEEN_SECONDS
+	)
+	_snake_view.stage_turn_progress(clampf(preview_progress, 0.0, 1.0))
 
 
 func _stage_over() -> void:

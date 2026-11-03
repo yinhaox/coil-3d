@@ -6,6 +6,11 @@ extends Node3D
 ## with two eyes. Positions interpolate between the previous and the current
 ## logic cells; the head yaw tweens over `min(0.08 s, step_duration)`.
 ##
+## The head yaw can start on the input frame through `preview_turn()`, before the
+## logic step that consumes the queued turn, so a key press reads immediately
+## while cell movement keeps the fixed step cadence (design/architecture.md
+## "Frame and input").
+##
 ## This view only reads snapshots pushed by the controller. It never changes
 ## logic state (design/architecture.md layer rule 2).
 
@@ -37,6 +42,7 @@ var _current_yaw := 0.0
 var _turn_elapsed := 0.0
 var _turn_duration := TURN_TWEEN_SECONDS
 var _turn_held := false
+var _previewed_direction := Vector2i.ZERO
 var _pulse_elapsed := 0.0
 var _body_multimesh: MultiMesh
 var _head: Node3D
@@ -63,15 +69,71 @@ func apply_step(
 ) -> void:
 	_previous_cells = previous_cells
 	_current_cells = current_cells
-	_previous_yaw = yaw_for_direction(previous_direction)
-	_current_yaw = yaw_for_direction(direction)
-	_turn_duration = turn_tween_seconds(step_duration_seconds)
-	_turn_elapsed = _turn_duration if is_equal_approx(_previous_yaw, _current_yaw) else 0.0
+	_apply_step_turn(previous_direction, direction, step_duration_seconds)
+	_previewed_direction = Vector2i.ZERO
 	_turn_held = false
 	if ate:
 		_pulse_elapsed = EAT_PULSE_SECONDS
 	_body_multimesh.instance_count = _current_cells.size()
 	_apply_segment_colors()
+
+
+func _apply_step_turn(
+	previous_direction: Vector2i, direction: Vector2i, step_duration_seconds: float
+) -> void:
+	var previous_yaw := yaw_for_direction(previous_direction)
+	var current_yaw := yaw_for_direction(direction)
+	if _previewed_direction == direction:
+		# The head already turned on the input frame; keep that tween going and
+		# never snap back to the heading of the step that just ended.
+		_current_yaw = current_yaw
+		_turn_duration = minf(_turn_duration, maxf(step_duration_seconds, _turn_elapsed))
+		return
+	_previous_yaw = previous_yaw
+	_current_yaw = current_yaw
+	_turn_duration = turn_tween_seconds(step_duration_seconds)
+	_turn_elapsed = _turn_duration if is_equal_approx(previous_yaw, current_yaw) else 0.0
+
+
+## Start the head turn toward `direction` on the current frame, before the logic
+## step that consumes the queued turn. A second input before that step targets
+## the move after it, so it does not replace this preview.
+func preview_turn(direction: Vector2i, step_duration_seconds: float) -> void:
+	if _previewed_direction != Vector2i.ZERO:
+		return
+	var target_yaw := yaw_for_direction(direction)
+	_previewed_direction = direction
+	_previous_yaw = displayed_yaw()
+	_current_yaw = target_yaw
+	_turn_duration = turn_tween_seconds(step_duration_seconds)
+	_turn_elapsed = _turn_duration if is_equal_approx(_previous_yaw, _current_yaw) else 0.0
+	_turn_held = false
+
+
+## Direction of the accepted turn that no logic step has consumed yet, or
+## Vector2i.ZERO when no preview is pending.
+func previewed_direction() -> Vector2i:
+	return _previewed_direction
+
+
+## Head yaw the presentation currently shows, in radians.
+func displayed_yaw() -> float:
+	return lerp_angle(_previous_yaw, _current_yaw, turn_progress())
+
+
+## Fraction of the current head-turn tween already played, in 0..1.
+func turn_progress() -> float:
+	if _turn_duration <= 0.0:
+		return 1.0
+	return clampf(_turn_elapsed / _turn_duration, 0.0, 1.0)
+
+
+## Advance the head-turn tween by one frame. Separate from update_view() so the
+## preview can be measured without creating rendering nodes.
+func advance_turn(delta_seconds: float) -> void:
+	if _turn_held or _turn_duration <= 0.0:
+		return
+	_turn_elapsed = minf(_turn_elapsed + maxf(delta_seconds, 0.0), _turn_duration)
 
 
 ## Set the interpolation fraction for the current logic step, in 0..1.
@@ -86,12 +148,10 @@ func stage_turn_progress(progress: float) -> void:
 
 
 func update_view(delta_seconds: float) -> void:
-	if not _turn_held and _turn_duration > 0.0:
-		_turn_elapsed = minf(_turn_elapsed + maxf(delta_seconds, 0.0), _turn_duration)
+	advance_turn(delta_seconds)
 	if _pulse_elapsed > 0.0:
 		_pulse_elapsed = maxf(_pulse_elapsed - maxf(delta_seconds, 0.0), 0.0)
-	var turn_ratio := 1.0 if _turn_duration <= 0.0 else _turn_elapsed / _turn_duration
-	_update_head(turn_ratio)
+	_update_head(turn_progress())
 	_update_body()
 
 
