@@ -21,5 +21,3 @@ func _ready() -> void:
 		push_error("main: cannot load %s" % GAME_SCENE_PATH)
 		return
 	add_child(packed.instantiate())
-
-func probe_broken(:
