@@ -1,0 +1,4 @@
+[capture] target: production\qa\evidence\perf-fps-log\initial.png
+[capture] waiting up to 60s for the PNG
+$ godot --path . -- --studio-capture=C:\Users\yinha\.dsh\state\superagent-coil\work\fps-log-sampling-3e95a0ef6d69\production\qa\evidence\perf-fps-log\initial.png
+[capture] OK: production\qa\evidence\perf-fps-log\initial.png (30576 bytes)
