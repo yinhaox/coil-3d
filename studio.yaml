@@ -1,6 +1,6 @@
 studio: Coil 3D
 godot:
-  path: D:/SteamLibrary/steamapps/common/Godot Engine/godot.windows.opt.tools.64.exe
+  path: godot
   version: "4.7"
 check_command: python scripts/studio.py check
 test_command: python scripts/studio.py test
