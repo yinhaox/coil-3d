@@ -169,14 +169,6 @@ func end_reason() -> int:
 	return _end_reason
 
 
-func is_playing() -> bool:
-	return _state == State.PLAYING
-
-
-func is_over() -> bool:
-	return _state == State.OVER
-
-
 func head_cell() -> Vector2i:
 	if _body.is_empty():
 		return _arena.start_cell
@@ -217,10 +209,6 @@ func step_duration_seconds() -> float:
 
 func elapsed_seconds() -> float:
 	return _elapsed_seconds
-
-
-func arena_data() -> ArenaData:
-	return _arena
 
 
 func _reset_run() -> void:
