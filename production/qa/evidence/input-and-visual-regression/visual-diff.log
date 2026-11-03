@@ -3,6 +3,6 @@ candidate: production/qa/evidence/input-and-visual-regression/arena-initial.png 
 total pixels: 746496
 differing pixels: 1420
 difference ratio: 0.001902
-tolerance: 0.020000
+tolerance: 0.010000
 result: PASS (exit 0)
 DIFF_EXIT=0

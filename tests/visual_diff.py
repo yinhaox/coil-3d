@@ -4,13 +4,12 @@
 The tool is meant for screenshot regression checks: capture a candidate with the
 studio capture command and compare it against a committed baseline. It prints the
 differing pixel count and ratio, then exits 0 when the ratio is within the given
-tolerance.
+tolerance. The tolerance defaults to 0.01 (1% of the pixels).
 
 Usage:
     python tests/visual_diff.py \
         --baseline tests/baselines/arena-initial.png \
-        --candidate production/qa/evidence/<story>/arena-initial.png \
-        --tolerance 0.02
+        --candidate production/qa/evidence/<story>/arena-initial.png
 
 Exit codes:
     0   the difference ratio is at or below --tolerance
@@ -28,6 +27,7 @@ import zlib
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 CHANNELS_BY_COLOR_TYPE = {0: 1, 2: 3, 3: 1, 4: 2, 6: 4}
 BYTES_PER_CHANNEL = 1
+DEFAULT_TOLERANCE = 0.01
 
 
 class PngError(Exception):
@@ -231,9 +231,9 @@ def parse_args(argv=None) -> argparse.Namespace:
     parser.add_argument("--candidate", required=True, help="newly captured PNG to compare")
     parser.add_argument(
         "--tolerance",
-        required=True,
         type=float,
-        help="largest allowed difference ratio, for example 0.02 (2%% of the pixels)",
+        default=DEFAULT_TOLERANCE,
+        help="largest allowed difference ratio (default: %(default)s, i.e. 1%% of the pixels)",
     )
     args = parser.parse_args(argv)
     if not 0.0 <= args.tolerance <= 1.0:
