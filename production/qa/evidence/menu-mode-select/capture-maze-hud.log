@@ -1,0 +1,5 @@
+[capture] target: production\qa\evidence\menu-mode-select\maze-hud.png
+[capture] user arguments: --screen=game --arena=maze-01
+[capture] waiting up to 60s for the PNG
+$ godot --path . -- --studio-capture=C:\Users\yinha\.dsh\state\superagent-coil\work\menu-mode-select-36ae64a35e2d\production\qa\evidence\menu-mode-select\maze-hud.png --screen=game --arena=maze-01
+[capture] OK: production\qa\evidence\menu-mode-select\maze-hud.png (48958 bytes)

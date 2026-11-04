@@ -1,0 +1,5 @@
+[capture] removed stale file: C:\Users\yinha\.dsh\state\superagent-coil\work\menu-mode-select-36ae64a35e2d\production\qa\evidence\menu-mode-select\main-menu.png
+[capture] target: production\qa\evidence\menu-mode-select\main-menu.png
+[capture] waiting up to 60s for the PNG
+$ godot --path . -- --studio-capture=C:\Users\yinha\.dsh\state\superagent-coil\work\menu-mode-select-36ae64a35e2d\production\qa\evidence\menu-mode-select\main-menu.png
+[capture] OK: production\qa\evidence\menu-mode-select\main-menu.png (34597 bytes)

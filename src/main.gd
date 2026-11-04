@@ -4,7 +4,8 @@ extends Node3D
 ## Application shell: owns only the screen flow
 ## (design/ux-and-persistence.md rule 1), never gameplay rules. The main scene
 ## stays res://scenes/main.tscn (design/architecture.md rule 4): it loads the
-## main menu first and swaps in the game scene when the player presses Play.
+## main menu first and swaps in the game scene when the player presses Play or a
+## mode entry, then hands the chosen mode to the game controller.
 ##
 ## Process-level flags select the starting screen for a capture run
 ## (`--screen=main-menu|how-to-play|settings|game`), passed by scripts/studio.py
@@ -33,6 +34,9 @@ enum Screen { MAIN_MENU, HOW_TO_PLAY, GAME }
 @export var save_path: String = ""
 
 var _screen: int = Screen.MAIN_MENU
+## Mode the menu opens on and Play starts: the last mode a run used, or the
+## catalog default before the first run.
+var _current_mode: String = ModeCatalog.DEFAULT_MODE
 var _menu: MainMenu = null
 var _how_to_play: HowToPlay = null
 var _settings: SettingsScreen = null
@@ -111,9 +115,10 @@ func save_store() -> SaveStore:
 	return _save_store
 
 
-## Play starts the standard Classic run. The mode selector is a later story, so
-## there is no second route to pick yet.
-func start_game() -> void:
+## Play and the mode entries both start a run. The mode name resolves through
+## ModeCatalog, whose default arena the game loads (design/game-modes.md rule 1);
+## it also becomes the mode the menu highlights when the player comes back.
+func start_game(mode_name: String = ModeCatalog.DEFAULT_MODE) -> void:
 	_drop_screens()
 	var packed := load(GAME_SCENE_PATH) as PackedScene
 	if packed == null:
@@ -126,8 +131,10 @@ func start_game() -> void:
 		show_main_menu()
 		return
 	_screen = Screen.GAME
+	_current_mode = ModeCatalog.resolve_mode(mode_name)
 	if not save_path.is_empty():
 		game.save_path = save_path
+	game.start_mode = _current_mode
 	game.shared_save_store = _save_store
 	game.shared_audio = _audio
 	game.main_menu_requested.connect(return_to_main_menu)
@@ -147,8 +154,10 @@ func show_main_menu() -> void:
 		push_error("app_root: %s is not a main menu" % MAIN_MENU_SCENE_PATH)
 		return
 	_screen = Screen.MAIN_MENU
+	menu.current_mode = _current_mode
 	menu.audio = _audio
 	menu.play_requested.connect(start_game)
+	menu.mode_requested.connect(start_game)
 	menu.how_to_play_requested.connect(open_how_to_play)
 	menu.settings_requested.connect(open_settings)
 	menu.quit_requested.connect(quit_game)
