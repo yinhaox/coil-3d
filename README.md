@@ -32,7 +32,7 @@ Requires Godot 4.7 and Python 3.
 
 ```sh
 godot --headless --path . --import
-python scripts/studio.py test      # 400+ headless checks
+python scripts/studio.py test      # 540 headless checks
 python scripts/studio.py run
 ```
 
@@ -64,7 +64,7 @@ production/    stories, evidence, releases
 
 ## Verification
 
-- `python scripts/studio.py test` — 448 headless checks (rules, camera, save,
+- `python scripts/studio.py test` — 540 headless checks (rules, camera, save,
   UI routing, input events, frame-time parser).
 - `python tests/visual_diff.py` — fresh capture against a committed baseline.
 - GitHub Actions runs the same suite on Godot 4.7.2 for every push.
