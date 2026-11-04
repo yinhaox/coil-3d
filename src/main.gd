@@ -67,6 +67,7 @@ func _ready() -> void:
 	var arguments := _user_arguments()
 	_init_audio()
 	_init_save_store(arguments)
+	_current_mode = _save_store.last_mode()
 	_add_process_flags(OS.get_cmdline_user_args())
 	match _requested_screen():
 		SCREEN_HOW_TO_PLAY:
@@ -154,15 +155,26 @@ func show_main_menu() -> void:
 		push_error("app_root: %s is not a main menu" % MAIN_MENU_SCENE_PATH)
 		return
 	_screen = Screen.MAIN_MENU
+	if _save_store != null:
+		_current_mode = _save_store.last_mode()
 	menu.current_mode = _current_mode
 	menu.audio = _audio
 	menu.play_requested.connect(start_game)
-	menu.mode_requested.connect(start_game)
+	menu.mode_requested.connect(_on_mode_requested)
 	menu.how_to_play_requested.connect(open_how_to_play)
 	menu.settings_requested.connect(open_settings)
 	menu.quit_requested.connect(quit_game)
 	_menu = menu
 	add_child(menu)
+
+
+## A mode entry writes the choice back before the run starts, so the next launch
+## opens the main menu with that mode highlighted (issue #36).
+func _on_mode_requested(mode_name: String) -> void:
+	if _save_store != null:
+		_save_store.set_last_mode(mode_name)
+		_save_store.save()
+	start_game(mode_name)
 
 
 func open_how_to_play() -> void:
