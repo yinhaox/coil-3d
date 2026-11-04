@@ -12,3 +12,8 @@ export/
 # Python helper cache
 __pycache__/
 *.pyc
+
+# Exported builds
+build/
+dist/
+
