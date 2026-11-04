@@ -43,6 +43,14 @@ func _ready() -> void:
 	_set_shown(false)
 
 
+## The game controller injects the shared audio director so Retry / Main menu
+## use the same click cue as the rest of the UI.
+func wire_audio(audio: AudioDirector) -> void:
+	if audio == null:
+		return
+	audio.wire_buttons([_retry_button, _main_menu_button])
+
+
 func _on_run_ended(score: int, best: int, is_new_best: bool, end_reason: int) -> void:
 	_reason_label.text = tr(END_MESSAGES.get(end_reason, "Run over"))
 	_score_label.text = tr("Score: %d") % score
