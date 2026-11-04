@@ -195,6 +195,12 @@ func score() -> int:
 	return _score
 
 
+## Segment count. A plain accessor for the HUD, so the read path allocates no
+## array copy the way `body_cells()` does.
+func length() -> int:
+	return _body.size()
+
+
 func food_eaten() -> int:
 	return _food_eaten
 

@@ -1,39 +1,45 @@
 class_name Hud
 extends CanvasLayer
 
-## One-line status HUD for the first visible slice: score plus the run-end
-## prompt. The controller emits `status_changed`; this node owns the Label text
-## so gameplay code never touches UI nodes directly (.dsh/rules/gdscript.md).
-## The full HUD, end panel and localized strings belong to a later UI story.
+## Read-only run stats for the corners of the screen: score, length, current
+## speed, elapsed time and the best score for this mode
+## (design/ux-and-persistence.md screen 4). The controller emits
+## `stats_changed`; this node owns the label text, so gameplay code never
+## touches UI nodes directly (.dsh/rules/gdscript.md).
+##
+## Labels are only rewritten when their text actually changes, and the
+## controller only emits when a displayed value changes, so nothing flickers.
 
-const END_MESSAGES := {
-	SnakeSession.EndReason.WALL: "Wall hit — run over",
-	SnakeSession.EndReason.OBSTACLE: "Obstacle hit — run over",
-	SnakeSession.EndReason.SELF: "Self collision — run over",
-	SnakeSession.EndReason.TIME_UP: "Time up — run over",
-	SnakeSession.EndReason.CLEARED: "Board cleared",
-}
-
-@onready var _score_label: Label = $ScoreLabel
-@onready var _end_label: Label = $EndLabel
-
-var _last_score := -1
-var _last_state := -1
-var _last_reason := -1
+@onready var _score_label: Label = $Stats/VBox/ScoreLabel
+@onready var _length_label: Label = $Stats/VBox/LengthLabel
+@onready var _speed_label: Label = $Stats/VBox/SpeedLabel
+@onready var _time_label: Label = $Stats/VBox/TimeLabel
+@onready var _best_label: Label = $Best/BestLabel
 
 
-## Called through the scene's signal connection when score or state changes.
-func _on_status_changed(score: int, state: int, end_reason: int) -> void:
-	if score != _last_score:
-		_last_score = score
-		_score_label.text = tr("Score: %d") % score
-	if state == _last_state and end_reason == _last_reason:
-		return
-	_last_state = state
-	_last_reason = end_reason
-	if state == SnakeSession.State.OVER:
-		var message: String = END_MESSAGES.get(end_reason, "Run over")
-		_end_label.text = tr(message)
-		_end_label.visible = true
-	else:
-		_end_label.visible = false
+func _ready() -> void:
+	# A CanvasLayer is not a CanvasItem, so the HUD installs the theme on the
+	# two Controls that own the labels instead of inheriting the window theme.
+	$Stats.theme = AppTheme.shared()
+	$Best.theme = AppTheme.shared()
+
+
+func _on_stats_changed(score: int, length: int, speed: float, elapsed: float, best: int) -> void:
+	_set_text(_score_label, tr("Score: %d") % score)
+	_set_text(_length_label, tr("Length: %d") % length)
+	_set_text(_speed_label, tr("Speed: %.1f cells/s") % speed)
+	_set_text(_time_label, tr("Time: %s") % format_time(elapsed))
+	_set_text(_best_label, tr("Best: %d") % best)
+
+
+## `m:ss` for the run clock, truncated rather than rounded so it never shows
+## more time than the run actually took.
+static func format_time(seconds: float) -> String:
+	var total := int(maxf(seconds, 0.0))
+	var minutes := int(total / 60.0)
+	return "%d:%02d" % [minutes, total % 60]
+
+
+func _set_text(label: Label, text: String) -> void:
+	if label.text != text:
+		label.text = text

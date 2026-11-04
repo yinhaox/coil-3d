@@ -11,11 +11,19 @@ extends SceneTree
 const MAIN_SCRIPT = preload("res://src/main.gd")
 const MAIN_SCENE_PATH = "res://scenes/main.tscn"
 const GAME_SCENE_PATH := "res://scenes/game.tscn"
+const MAIN_MENU_SCENE_PATH := "res://scenes/ui/main_menu.tscn"
+const HOW_TO_PLAY_SCENE_PATH := "res://scenes/ui/how_to_play.tscn"
 const CAPTURE_SCRIPT_PATH = "res://addons/studio_capture/capture.gd"
 const INPUT_EVENTS := preload("res://tests/input_events.gd")
 
 const ARENAS_DIRECTORY := "res://assets/data/arenas"
 const ARENA_IDS: Array[String] = ["classic-12", "classic-16", "maze-01", "time-attack-16"]
+
+const TEST_INPUT_SAVE_DIRECTORY := "user://test_input_events"
+const TEST_SAVE_DIRECTORY := "user://test_save_store"
+const TEST_SHELL_DIRECTORY := "user://test_app_shell"
+const TEST_PANEL_DIRECTORY := "user://test_hud_end"
+const MAX_TEST_STEPS := 64
 
 var _passed := 0
 var _failed := 0
@@ -31,6 +39,7 @@ func _run_tests() -> void:
 	await process_frame
 	_test_boot_scene()
 	_test_game_scene()
+	_test_ui_screens()
 	_test_project_settings()
 	_test_fps_log()
 	_test_grid_space()
@@ -53,6 +62,9 @@ func _run_tests() -> void:
 	_test_full_board()
 	_test_modes_share_one_logic()
 	_test_time_attack_clock()
+	_test_save_store()
+	_test_app_shell()
+	_test_hud_pause_and_end_panel()
 
 	if _failed == 0:
 		print("PASS: %d checks passed" % _passed)
@@ -74,7 +86,12 @@ func _check(condition: bool, label: String) -> void:
 
 func _test_boot_scene() -> void:
 	_check(MAIN_SCRIPT.game_scene_path() == GAME_SCENE_PATH, "main.gd loads scenes/game.tscn")
+	_check(
+		MAIN_SCRIPT.main_menu_scene_path() == MAIN_MENU_SCENE_PATH,
+		"main.gd boots into the main menu scene"
+	)
 	_check(ResourceLoader.exists(GAME_SCENE_PATH), "scenes/game.tscn exists")
+	_check(ResourceLoader.exists(MAIN_MENU_SCENE_PATH), "scenes/ui/main_menu.tscn exists")
 	_check(ResourceLoader.exists(MAIN_SCENE_PATH), "scenes/main.tscn exists")
 
 	var packed := load(MAIN_SCENE_PATH) as PackedScene
@@ -92,7 +109,12 @@ func _test_boot_scene() -> void:
 
 	var attached := root.get_script() as Script
 	_check(attached != null and attached.resource_path == "res://src/main.gd", "main scene root runs src/main.gd")
-	_check(root.get_child_count() == 0, "main scene keeps no playfield of its own; it loads game.tscn")
+	_check(root.get_child_count() == 0, "the boot entry adds no screen before _ready")
+	root._add_process_flags(PackedStringArray(["--quit-after=10"]))
+	_check(
+		root.get_child_count() == 1 and root.get_child(0) is FpsLog,
+		"the boot entry still installs the frame sampler from user arguments"
+	)
 	root.free()
 
 
@@ -128,9 +150,90 @@ func _test_game_scene() -> void:
 		_check(root.get_node_or_null(node_path) != null, "game scene has a %s node" % node_path)
 	var hud := root.get_node_or_null("HUD")
 	if hud != null:
-		_check(hud.get_node_or_null("ScoreLabel") != null, "HUD has a score label")
-		_check(hud.get_node_or_null("EndLabel") != null, "HUD has the one-line end label")
+		for label_name in ["ScoreLabel", "LengthLabel", "SpeedLabel", "TimeLabel"]:
+			_check(
+				hud.get_node_or_null("Stats/VBox/" + label_name) != null,
+				"HUD has a %s" % label_name
+			)
+		_check(hud.get_node_or_null("Best/BestLabel") != null, "HUD has the best-score label")
+	var pause_menu := root.get_node_or_null("PauseMenu")
+	_check(pause_menu != null, "game scene has a PauseMenu")
+	if pause_menu != null:
+		for button_name in ["ResumeButton", "RestartButton", "MainMenuButton"]:
+			_check(
+				pause_menu.get_node_or_null("Root/Center/Panel/Margin/VBox/" + button_name) != null,
+				"the pause menu has a %s" % button_name
+			)
+	var end_panel := root.get_node_or_null("EndPanel")
+	_check(end_panel != null, "game scene has an EndPanel")
+	if end_panel != null:
+		for button_name in ["RetryButton", "MainMenuButton"]:
+			_check(
+				end_panel.get_node_or_null("Root/Center/Panel/Margin/VBox/" + button_name) != null,
+				"the end panel has a %s" % button_name
+			)
+		_check(
+			end_panel.get_node_or_null("Root/Center/Panel/Margin/VBox/NewBestLabel") != null,
+			"the end panel has the New best label"
+		)
 	root.free()
+
+
+func _test_ui_screens() -> void:
+	var menu_packed := load(MAIN_MENU_SCENE_PATH) as PackedScene
+	if menu_packed == null:
+		_check(false, "the main menu scene loads")
+		return
+	_check(true, "the main menu scene loads")
+	var menu := menu_packed.instantiate() as MainMenu
+	if menu == null:
+		_check(false, "the main menu scene instantiates")
+		return
+	root.add_child(menu)
+	_check(menu.theme == AppTheme.shared(), "the main menu installs the app theme")
+	var menu_title := menu.get_node_or_null("Center/Panel/Margin/VBox/TitleLabel") as Label
+	_check(menu_title != null and not menu_title.text.is_empty(), "the main menu writes its title")
+	var play := menu.get_node_or_null("Center/Panel/Margin/VBox/PlayButton") as Button
+	var how_to := menu.get_node_or_null("Center/Panel/Margin/VBox/HowToPlayButton") as Button
+	var quit := menu.get_node_or_null("Center/Panel/Margin/VBox/QuitButton") as Button
+	_check(play != null and play.text == "Play", "the main menu shows Play")
+	_check(how_to != null and how_to.text == "How to play", "the main menu shows How to play")
+	_check(quit != null and quit.text == "Quit", "the main menu shows Quit")
+	_check(play != null and play.has_focus(), "the main menu focuses Play")
+	_check(
+		play != null and play.custom_minimum_size.y >= AppTheme.BUTTON_MINIMUM.y,
+		"menu buttons keep a 44 px target"
+	)
+	_check(
+		play != null and play.focus_neighbor_bottom == play.get_path_to(how_to),
+		"the main menu wires explicit focus neighbours"
+	)
+	root.remove_child(menu)
+	menu.free()
+
+	var page_packed := load(HOW_TO_PLAY_SCENE_PATH) as PackedScene
+	if page_packed == null:
+		_check(false, "the how-to-play scene loads")
+		return
+	_check(true, "the how-to-play scene loads")
+	var page := page_packed.instantiate() as HowToPlay
+	if page == null:
+		_check(false, "the how-to-play scene instantiates")
+		return
+	root.add_child(page)
+	var body := page.get_node_or_null("Center/Panel/Margin/VBox/BodyLabel") as Label
+	_check(body != null and body.autowrap_mode != TextServer.AUTOWRAP_OFF, "the how-to-play text wraps")
+	var back := page.get_node_or_null("Center/Panel/Margin/VBox/BackButton") as Button
+	_check(back != null and back.has_focus(), "the how-to-play page focuses Back")
+	var back_pressed := {"value": false}
+	page.back_requested.connect(func() -> void: back_pressed["value"] = true)
+	var cancel := InputEventAction.new()
+	cancel.action = &"ui_cancel"
+	cancel.pressed = true
+	page._unhandled_input(cancel)
+	_check(back_pressed["value"], "Esc leaves How to play")
+	root.remove_child(page)
+	page.free()
 
 
 func _test_grid_space() -> void:
@@ -395,6 +498,7 @@ func _test_input_actions() -> void:
 
 
 func _test_real_input_events() -> void:
+	_remove_temp_directory(TEST_INPUT_SAVE_DIRECTORY)
 	var left_key := INPUT_EVENTS.key_for_action("snake_left")
 	_check(
 		left_key == KEY_A or left_key == KEY_LEFT,
@@ -524,20 +628,30 @@ func _advance_game(game: GameController, delta_seconds: float) -> int:
 ## Instantiate the real game scene inside the running tree and skip its opening
 ## countdown, so injected keyboard events reach GameController._unhandled_input().
 func _spawn_playing_game() -> GameController:
+	var game := _spawn_game(TEST_INPUT_SAVE_DIRECTORY + "/save.json")
+	if game == null:
+		return null
+	game._session.advance_time(SnakeSession.START_COUNTDOWN_SECONDS)
+	return game
+
+
+## Instantiate the game with an injected save path, then add it to the tree so
+## _ready() builds the session and the UI overlays.
+func _spawn_game(save_path: String) -> GameController:
 	var packed := load(GAME_SCENE_PATH) as PackedScene
 	if packed == null:
-		_check(false, "scenes/game.tscn loads for the input-event checks")
+		_check(false, "scenes/game.tscn loads for the UI checks")
 		return null
 	var game := packed.instantiate() as GameController
 	if game == null:
 		_check(false, "scenes/game.tscn instantiates the game controller")
 		return null
+	game.save_path = save_path
 	root.add_child(game)
 	if game._session == null:
-		_check(false, "the game controller starts a session for the input-event checks")
+		_check(false, "the game controller starts a session for the UI checks")
 		_release_game(game)
 		return null
-	game._session.advance_time(SnakeSession.START_COUNTDOWN_SECONDS)
 	return game
 
 
@@ -1166,6 +1280,296 @@ func _test_time_attack_clock() -> void:
 		)
 
 
+func _test_save_store() -> void:
+	var directory := TEST_SAVE_DIRECTORY
+	_remove_temp_directory(directory)
+	DirAccess.make_dir_recursive_absolute(directory)
+	var path := directory + "/save.json"
+
+	var empty := SaveStore.new(path)
+	_check(not empty.load_from_disk(), "a missing save file falls back to defaults")
+	_check(empty.best_score(ArenaData.MODE_CLASSIC) == 0, "default best scores are zero")
+	_check(
+		is_equal_approx(empty.master_volume(), SaveStore.DEFAULT_MASTER_VOLUME),
+		"the default master volume is 0.8"
+	)
+	_check(
+		is_equal_approx(empty.sfx_volume(), SaveStore.DEFAULT_SFX_VOLUME),
+		"the default sfx volume is 0.8"
+	)
+	_check(empty.total_runs() == 0, "a fresh save has no runs")
+
+	_check(empty.record_score(ArenaData.MODE_CLASSIC, 120), "a higher score is a new record")
+	_check(not empty.record_score(ArenaData.MODE_CLASSIC, 80), "a lower score is not a record")
+	_check(not empty.record_score(ArenaData.MODE_CLASSIC, 120), "an equal score is not a record")
+	_check(empty.best_score(ArenaData.MODE_CLASSIC) == 120, "the best score only increases")
+	empty.record_run_started()
+	empty.set_master_volume(0.4)
+	empty.set_sfx_volume(0.6)
+	_check(empty.save(), "the save writes to disk")
+
+	var saved_text := _read_text_file(path)
+	var schema_index := saved_text.find("\"schema_version\"")
+	var scores_index := saved_text.find("\"best_scores\"")
+	var runs_index := saved_text.find("\"total_runs\"")
+	var settings_index := saved_text.find("\"settings\"")
+	_check(
+		schema_index >= 0 and scores_index >= 0 and runs_index >= 0 and settings_index >= 0,
+		"the save carries schema_version, best_scores, settings and total_runs"
+	)
+	_check(
+		scores_index < schema_index and schema_index < settings_index and settings_index < runs_index,
+		"the save writes keys in a stable sorted order"
+	)
+	_check(not FileAccess.file_exists(directory + "/save.tmp"), "no temp file is left after a write")
+	_check(not empty.is_read_only(), "a version 1 save is writable")
+
+	var reloaded := SaveStore.new(path)
+	_check(reloaded.load_from_disk(), "a written save loads again")
+	_check(reloaded.best_score(ArenaData.MODE_CLASSIC) == 120, "the best score survives a round trip")
+	_check(is_equal_approx(reloaded.master_volume(), 0.4), "the master volume survives a round trip")
+	_check(is_equal_approx(reloaded.sfx_volume(), 0.6), "the sfx volume survives a round trip")
+	_check(reloaded.total_runs() == 1, "the run count survives a round trip")
+
+	_check(reloaded.record_score(ArenaData.MODE_CLASSIC, 150), "a later higher score is a record")
+	_check(reloaded.save(), "the second save replaces the first")
+	_check(FileAccess.file_exists(directory + "/save.bak"), "the previous save is kept as save.bak")
+	_check(
+		_read_text_file(directory + "/save.bak").contains("\"classic\": 120"),
+		"save.bak holds the previous best score"
+	)
+
+	_remove_temp_directory(directory)
+	DirAccess.make_dir_recursive_absolute(directory)
+	_write_text_file(path, "{ this is not json")
+	var corrupt := SaveStore.new(path)
+	_check(not corrupt.load_from_disk(), "a corrupt save falls back to defaults")
+	_check(corrupt.best_score(ArenaData.MODE_CLASSIC) == 0, "a corrupt save loads default scores")
+	var quarantined := ""
+	for file_name in _files_in(directory):
+		if file_name.begins_with("save.corrupt-") and file_name.ends_with(".json"):
+			quarantined = file_name
+	_check(not quarantined.is_empty(), "the corrupt file is renamed to save.corrupt-<ts>.json")
+	_check(
+		_read_text_file(directory + "/" + quarantined) == "{ this is not json",
+		"the quarantined file keeps its original text"
+	)
+
+	_write_text_file(path, "{ still not json")
+	_write_text_file(directory + "/save.bak", JSON.stringify({
+		"schema_version": 1,
+		"best_scores": {"classic": 90, "maze": 0, "time_attack": 0},
+		"total_runs": 4,
+		"settings": {"master_volume": 0.5, "sfx_volume": 0.5},
+	}))
+	var from_backup := SaveStore.new(path)
+	_check(from_backup.load_from_disk(), "a corrupt save falls back to save.bak")
+	_check(from_backup.best_score(ArenaData.MODE_CLASSIC) == 90, "the backup best score is used")
+
+	_write_text_file(path, JSON.stringify({
+		"schema_version": 2,
+		"best_scores": {"classic": 500},
+		"total_runs": 9,
+		"settings": {"master_volume": 0.1, "sfx_volume": 0.1},
+	}))
+	var read_only := SaveStore.new(path)
+	_check(read_only.load_from_disk(), "a newer schema still loads its readable fields")
+	_check(read_only.is_read_only(), "a newer schema makes the store read-only")
+	_check(read_only.best_score(ArenaData.MODE_CLASSIC) == 500, "the newer schema best score is readable")
+	_check(
+		is_equal_approx(read_only.master_volume(), SaveStore.DEFAULT_MASTER_VOLUME),
+		"a newer schema uses default settings"
+	)
+	_check(not read_only.save(), "a read-only store refuses to write")
+	var newer_data: Variant = JSON.parse_string(_read_text_file(path))
+	var newer_version := 0
+	if typeof(newer_data) == TYPE_DICTIONARY:
+		newer_version = int((newer_data as Dictionary).get("schema_version", 0))
+	_check(newer_version == 2, "the newer schema file is not overwritten")
+
+	_remove_temp_directory(directory)
+	DirAccess.make_dir_recursive_absolute(directory)
+	_write_text_file(path, JSON.stringify({
+		"schema_version": 1,
+		"best_scores": {},
+		"total_runs": -5,
+		"settings": {"master_volume": 5.0, "sfx_volume": -1.0},
+	}))
+	var clamped := SaveStore.new(path)
+	clamped.load_from_disk()
+	_check(is_equal_approx(clamped.master_volume(), 1.0), "a volume above 1 clamps to 1")
+	_check(is_equal_approx(clamped.sfx_volume(), 0.0), "a volume below 0 clamps to 0")
+	_check(clamped.total_runs() == 0, "a negative run count clamps to 0")
+	_check(SaveStore.SCHEMA_VERSION == 1, "the save schema version is 1")
+	_remove_temp_directory(directory)
+
+
+func _test_app_shell() -> void:
+	var directory := TEST_SHELL_DIRECTORY
+	_remove_temp_directory(directory)
+	DirAccess.make_dir_recursive_absolute(directory)
+	var packed := load(MAIN_SCENE_PATH) as PackedScene
+	if packed == null:
+		_check(false, "the main scene loads for the shell checks")
+		return
+	var shell := packed.instantiate() as AppRoot
+	if shell == null:
+		_check(false, "the main scene instantiates the app shell")
+		return
+	shell.save_path = directory + "/save.json"
+	root.add_child(shell)
+	_check(shell.current_screen() == AppRoot.Screen.MAIN_MENU, "a fresh launch shows the main menu")
+	var menu := shell.menu_node()
+	_check(menu != null, "the main menu is the first screen")
+	_check(shell.game_node() == null, "no game runs behind the main menu")
+	var play: Button = null
+	if menu != null:
+		play = menu.get_node_or_null("Center/Panel/Margin/VBox/PlayButton") as Button
+	if play != null:
+		play.emit_signal("pressed")
+	_check(shell.current_screen() == AppRoot.Screen.GAME, "Play routes to the game")
+	var game := shell.game_node()
+	_check(game != null, "Play creates the game scene")
+	_check(shell.menu_node() == null, "Play releases the main menu")
+	if game != null:
+		_check(game._arena != null and game._arena.mode == ArenaData.MODE_CLASSIC, "Play starts Classic")
+
+	shell.return_to_main_menu()
+	_check(shell.current_screen() == AppRoot.Screen.MAIN_MENU, "Main menu returns to the title screen")
+	_check(shell.game_node() == null, "returning to the menu drops the game scene")
+
+	shell.open_how_to_play()
+	_check(shell.current_screen() == AppRoot.Screen.HOW_TO_PLAY, "How to play opens its own screen")
+	var page := shell.how_to_play_node()
+	_check(page != null, "the how-to-play page is loaded")
+	if page != null:
+		var cancel := InputEventAction.new()
+		cancel.action = &"ui_cancel"
+		cancel.pressed = true
+		page._unhandled_input(cancel)
+		_check(
+			shell.current_screen() == AppRoot.Screen.MAIN_MENU,
+			"Esc leaves How to play for the main menu"
+		)
+
+	shell.open_how_to_play()
+	var open_page := shell.how_to_play_node()
+	if open_page != null:
+		var back_button := open_page.get_node_or_null("Center/Panel/Margin/VBox/BackButton") as Button
+		if back_button != null:
+			back_button.emit_signal("pressed")
+	_check(
+		shell.current_screen() == AppRoot.Screen.MAIN_MENU,
+		"the Back button leaves How to play"
+	)
+	root.remove_child(shell)
+	shell.free()
+	_remove_temp_directory(directory)
+
+
+func _test_hud_pause_and_end_panel() -> void:
+	var directory := TEST_PANEL_DIRECTORY
+	_remove_temp_directory(directory)
+	DirAccess.make_dir_recursive_absolute(directory)
+	var path := directory + "/save.json"
+	var game := _spawn_game(path)
+	if game == null:
+		return
+	game._session.advance_time(SnakeSession.START_COUNTDOWN_SECONDS)
+	var hud := game.get_node("HUD")
+	_check(hud.get_node("Stats/VBox/ScoreLabel").text == "Score: 0", "the HUD shows the score")
+	_check(hud.get_node("Stats/VBox/LengthLabel").text == "Length: 4", "the HUD shows the snake length")
+	_check(
+		hud.get_node("Stats/VBox/SpeedLabel").text == "Speed: 8.0 cells/s",
+		"the HUD shows the speed in cells/s"
+	)
+	_check(hud.get_node("Stats/VBox/TimeLabel").text == "Time: 0:00", "the HUD shows the run time")
+	_check(hud.get_node("Best/BestLabel").text == "Best: 0", "the HUD shows the best score")
+	_check(Hud.format_time(75.9) == "1:15", "the HUD clock formats minutes and seconds")
+
+	var pause_menu := game.get_node("PauseMenu") as PauseMenu
+	var end_panel := game.get_node("EndPanel") as EndPanel
+	_check(not pause_menu.visible, "the pause menu starts hidden")
+	_check(not end_panel.visible, "the end panel starts hidden")
+
+	game.toggle_pause()
+	_check(game._session.state() == SnakeSession.State.PAUSED, "Esc pauses the run")
+	_check(pause_menu.visible, "the pause menu opens")
+	var resume := game.get_node("PauseMenu/Root/Center/Panel/Margin/VBox/ResumeButton") as Button
+	_check(resume.has_focus(), "the pause menu focuses Resume")
+	var paused_head: Vector2i = game._session.head_cell()
+	_check(_advance_game(game, 1.0) == 0, "a paused run takes no logic steps")
+	_check(game._session.head_cell() == paused_head, "a paused snake does not move")
+	_check(not game._session.turn(SnakeSession.NORTH), "a paused run ignores turns")
+	game.resume_run()
+	_check(
+		game._session.state() == SnakeSession.State.COUNTDOWN,
+		"Resume restarts the countdown from the pause point"
+	)
+	_check(not pause_menu.visible, "the pause menu closes on resume")
+	_check(
+		game._session.head_cell() == paused_head,
+		"the snake stays on the pause cell during the resume countdown"
+	)
+
+	game._session.advance_time(SnakeSession.START_COUNTDOWN_SECONDS)
+	_check(game._session.state() == SnakeSession.State.PLAYING, "the resume countdown hands control back")
+	_check(_navigate_to_food(game._session, game._arena), "the run reaches food before the end panel")
+	game._emit_stats_if_changed()
+	_check(hud.get_node("Stats/VBox/ScoreLabel").text == "Score: 10", "the HUD score updates from the stats signal")
+	_check(hud.get_node("Stats/VBox/LengthLabel").text == "Length: 5", "the HUD length updates from the stats signal")
+	_check(
+		hud.get_node("Stats/VBox/SpeedLabel").text == "Speed: 8.2 cells/s",
+		"the HUD speed updates from the stats signal"
+	)
+
+	game._session.turn(SnakeSession.NORTH)
+	var steps := 0
+	while game._session.state() == SnakeSession.State.PLAYING and steps < MAX_TEST_STEPS:
+		game._session.step()
+		steps += 1
+	_check(game._session.state() == SnakeSession.State.OVER, "the run ends after turning into the wall")
+	game._emit_status_if_changed()
+	_check(end_panel.visible, "the end panel opens when the run ends")
+	_check(
+		end_panel.get_node("Root/Center/Panel/Margin/VBox/ScoreLabel").text == "Score: 10",
+		"the end panel shows the run score"
+	)
+	_check(
+		end_panel.get_node("Root/Center/Panel/Margin/VBox/BestLabel").text == "Best: 10",
+		"the end panel shows the new best score"
+	)
+	_check(
+		end_panel.get_node("Root/Center/Panel/Margin/VBox/NewBestLabel").visible,
+		"a record run is marked New best"
+	)
+	var retry := game.get_node("EndPanel/Root/Center/Panel/Margin/VBox/RetryButton") as Button
+	_check(retry.has_focus(), "the end panel focuses Retry")
+	_check(not pause_menu.visible, "the pause menu stays closed after the run ends")
+	_check(game._save_store.best_score(ArenaData.MODE_CLASSIC) == 10, "the best score is recorded")
+	var reloaded := SaveStore.new(path)
+	_check(
+		reloaded.load_from_disk() and reloaded.best_score(ArenaData.MODE_CLASSIC) == 10,
+		"the best score is persisted to disk"
+	)
+
+	var menu_requested := {"value": false}
+	game.main_menu_requested.connect(func() -> void: menu_requested["value"] = true)
+	var cancel := InputEventAction.new()
+	cancel.action = &"ui_cancel"
+	cancel.pressed = true
+	end_panel._unhandled_input(cancel)
+	_check(menu_requested["value"], "Esc on the end panel asks for the main menu")
+
+	game.restart_run()
+	_check(game._session.state() == SnakeSession.State.COUNTDOWN, "Retry starts a fresh countdown")
+	_check(game._session.score() == 0, "Retry starts from zero score")
+	_check(not end_panel.visible, "Retry hides the end panel")
+	_check(game._save_store.best_score(ArenaData.MODE_CLASSIC) == 10, "Retry keeps the best score")
+	_release_game(game)
+	_remove_temp_directory(directory)
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -1288,6 +1692,35 @@ func _navigate_to_food(session: SnakeSession, arena: ArenaData) -> bool:
 		if session.state() != SnakeSession.State.PLAYING:
 			return false
 	return true
+
+
+func _write_text_file(path: String, text: String) -> void:
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		_check(false, "the test can write %s" % path)
+		return
+	file.store_string(text)
+	file.close()
+
+
+func _read_text_file(path: String) -> String:
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return ""
+	var text := file.get_as_text()
+	file.close()
+	return text
+
+
+func _files_in(directory_path: String) -> Array[String]:
+	var names: Array[String] = []
+	var directory := DirAccess.open(directory_path)
+	if directory == null:
+		return names
+	for name: String in directory.get_files():
+		names.append(name)
+	names.sort()
+	return names
 
 
 func _write_temp_arena(directory_path: String, file_name: String, arena_id: String, mode_name: String) -> void:
