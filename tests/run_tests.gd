@@ -204,6 +204,13 @@ func _test_ui_screens() -> void:
 	_check(menu.theme == AppTheme.shared(), "the main menu installs the app theme")
 	var menu_title := menu.get_node_or_null("Center/Panel/Margin/VBox/TitleLabel") as Label
 	_check(menu_title != null and not menu_title.text.is_empty(), "the main menu writes its title")
+	var version := MainMenu.project_version()
+	_check(not version.is_empty(), "project.godot records a version")
+	var footer := menu.get_node_or_null("FooterLabel") as Label
+	_check(
+		footer != null and footer.text.contains(version),
+		"the main menu footer text contains the project version"
+	)
 	var play := menu.get_node_or_null("Center/Panel/Margin/VBox/PlayButton") as Button
 	var how_to := menu.get_node_or_null("Center/Panel/Margin/VBox/HowToPlayButton") as Button
 	var quit := menu.get_node_or_null("Center/Panel/Margin/VBox/QuitButton") as Button
