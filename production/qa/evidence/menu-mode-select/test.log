@@ -1,0 +1,582 @@
+$ godot --headless --path . --import
+[test] project: .
+$ godot --headless --path . -s res://tests/run_tests.gd
+Godot Engine v4.7.2.stable.steam.ed1daf0bf - https://godotengine.org
+
+PASS: main.gd loads scenes/game.tscn
+PASS: main.gd boots into the main menu scene
+PASS: scenes/game.tscn exists
+PASS: scenes/ui/main_menu.tscn exists
+PASS: scenes/main.tscn exists
+PASS: scenes/main.tscn loads as a PackedScene
+PASS: main scene root is a Node3D
+PASS: main scene root is named Main
+PASS: main scene root runs src/main.gd
+PASS: the boot entry adds no screen before _ready
+PASS: the boot entry still installs the frame sampler from user arguments
+PASS: scenes/game.tscn loads as a PackedScene
+PASS: game scene root is a Node3D
+PASS: game scene root is named Game
+PASS: game scene root runs the game controller
+PASS: game scene has a Camera
+PASS: Camera runs the isometric camera script
+PASS: Camera uses the orthogonal projection
+PASS: game scene has a ArenaView node
+PASS: game scene has a SnakeView node
+PASS: game scene has a FoodView node
+PASS: game scene has a HUD node
+PASS: HUD has a ScoreLabel
+PASS: HUD has a LengthLabel
+PASS: HUD has a SpeedLabel
+PASS: HUD has a TimeLabel
+PASS: HUD has the best-score label
+PASS: game scene has a PauseMenu
+PASS: the pause menu has a ResumeButton
+PASS: the pause menu has a RestartButton
+PASS: the pause menu has a MainMenuButton
+PASS: game scene has an EndPanel
+PASS: the end panel has a RetryButton
+PASS: the end panel has a MainMenuButton
+PASS: the end panel has the New best label
+PASS: the main menu scene loads
+PASS: the main menu installs the app theme
+PASS: the main menu writes its title
+PASS: project.godot records a version
+PASS: the main menu footer text contains the project version
+PASS: the main menu shows Play
+PASS: the main menu shows How to play
+PASS: the main menu shows Quit
+PASS: the main menu focuses Play
+PASS: menu buttons keep a 44 px target
+PASS: the main menu shows the three mode entries
+PASS: Classic is the highlighted mode by default
+PASS: the main menu wires explicit focus neighbours
+PASS: the keyboard focus order runs through the three mode entries
+PASS: the how-to-play scene loads
+PASS: the how-to-play text wraps
+PASS: the how-to-play page focuses Back
+PASS: Esc leaves How to play
+PASS: project name is Coil 3D
+PASS: main scene is registered in project.godot
+PASS: StudioCapture autoload points at the capture addon
+PASS: viewport width is 1152
+PASS: viewport height is 648
+PASS: no arguments create no frame sampler
+PASS: no arguments ask for no log and no quit timer
+PASS: a zero quit timer alone creates no sampler
+PASS: --fps-log carries the log path
+PASS: --quit-after carries the seconds
+PASS: a sample line is t_ms,frame_ms,fps with three decimals
+PASS: the parser recovers t_ms
+PASS: the parser recovers frame_ms
+PASS: the parser recovers fps
+PASS: the parser rejects a line with two fields
+PASS: the parser rejects the header line
+PASS: the quit timer keeps running before its deadline
+PASS: the quit timer fires at its deadline
+PASS: a zero quit timer never quits
+WARNING: fps_log: cannot write './no_such_directory_for_fps_log/fps.log' (error 7); frame sampling stays off
+   at: push_warning (core/variant/variant_utility.cpp:1033)
+   GDScript backtrace (most recent call first):
+       [0] _begin (res://src/perf/fps_log.gd:144)
+       [1] from_user_args (res://src/perf/fps_log.gd:39)
+       [2] _test_fps_log (res://tests/run_tests.gd:826)
+       [3] _run_tests (res://tests/run_tests.gd:46)
+PASS: an unwritable log path still creates the sampler
+PASS: an unwritable log path leaves sampling off instead of crashing
+PASS: the summary counts only parsable sample lines
+PASS: the summary reports the minimum FPS
+PASS: the summary averages the sample FPS
+PASS: the summary reports the p95 frame time
+PASS: cell (0,0) maps to the arena corner at -7.5
+PASS: cells map onto the floor plane
+PASS: cell (15,15) maps to +7.5
+PASS: cell (8,8) sits just east of the arena center
+PASS: a 12x12 arena starts at -5.5
+PASS: world_to_cell inverts cell_to_world
+PASS: world_to_cell reports out-of-arena positions as (-1, -1)
+PASS: camera yaw starts at 45 degrees
+PASS: camera pitch is 35.264 degrees
+PASS: 16x16 fit ortho size is 16.07
+PASS: 12x12 fit ortho size is 12.80
+PASS: fit leaves a margin around the walls
+PASS: zoom never goes below the whole-arena fit
+PASS: zoom is capped at twice the fit
+PASS: zoom keeps a value inside the range
+PASS: a 4:3 viewport needs a larger ortho size than 16:9
+PASS: E turns the camera 90 degrees
+PASS: Q turns the camera 90 degrees the other way
+PASS: the fourth quarter turn wraps back to 45
+PASS: the first half second only ticks the countdown
+PASS: the session is still counting down
+PASS: the second half second finishes the countdown without a step
+PASS: the countdown hands over to playing
+PASS: the countdown moves nothing
+PASS: a fresh step has no interpolation remainder
+PASS: 0.2 s at the Classic speed runs exactly one step
+PASS: the driver advanced the session one cell
+PASS: alpha carries the unused part of the step
+PASS: a long frame runs at most four steps
+PASS: the dropped time leaves alpha within 0..1
+PASS: a paused session runs no steps
+PASS: a paused session does not move
+PASS: the run ends on the wall
+PASS: an ended session runs no further steps
+PASS: an ended session keeps its last cell
+PASS: an ended session clears the interpolation remainder
+PASS: a slow step uses the full turn tween
+PASS: a fast step shortens the turn tween to the step
+PASS: a zero step has no turn tween
+PASS: north points the head at yaw zero
+PASS: east turns the head to -90 degrees
+PASS: west turns the head to +90 degrees
+PASS: south turns the head 180 degrees
+PASS: the head segment sits halfway between cells
+PASS: the tail segment interpolates too
+PASS: alpha is clamped at the current cell
+PASS: the new tail segment stays on its cell during growth
+PASS: the turn tween stays at 0.10 seconds
+PASS: an accepted turn is previewed on the input frame
+PASS: the preview starts from the heading currently on screen
+PASS: the preview tween starts at zero progress
+PASS: one 60 Hz frame already shows a visible turn
+PASS: one frame advances the 0.10 s tween by about 1/6
+PASS: a second input before the step does not replace the pending preview
+PASS: the preview finishes within 0.10 seconds
+PASS: the previewed head faces north before the step
+PASS: the consuming step clears the preview
+PASS: the consuming step does not snap the head back east
+PASS: a turn seen only at the step still starts its tween from zero
+PASS: a step-started turn still completes in 0.10 seconds
+PASS: the mode catalog lists the three 1.0 modes
+PASS: each mode names its default arena file
+PASS: each mode names the text its card shows
+PASS: an unknown mode resolves to Classic
+PASS: an unknown mode falls back to the Classic file and name
+PASS: startup picks the first Classic arena
+PASS: mode classic starts on the default classic-12 arena
+PASS: mode maze starts on the default maze-01 arena
+PASS: mode time_attack starts on the default time-attack-16 arena
+PASS: an unknown mode falls back to the Classic arena
+PASS: --arena selects another arena by id
+PASS: an unknown arena id is reported as no arena
+PASS: input action snake_up is registered
+PASS: input action snake_down is registered
+PASS: input action snake_left is registered
+PASS: input action snake_right is registered
+PASS: snake_up binds both W and the up arrow
+PASS: the pause action is registered
+PASS: the event helper resolves snake_left to a bound key
+PASS: the event helper reports an unknown action as KEY_NONE
+PASS: the event helper injects an up-arrow press and release
+PASS: an accepted turn plays exactly one turn cue
+PASS: the up arrow previews a north turn on its own frame
+PASS: the accepted turn leaves the logic heading east until the step
+PASS: the next logic step consumes the up-arrow turn
+PASS: the head moved north on the consumed turn
+PASS: the event helper injects a left-arrow press and release
+PASS: the left arrow previews a west turn on its own frame
+PASS: the snake head direction becomes west after the left-arrow step
+PASS: the head moved west after the left-arrow step
+PASS: the event helper injects the pause action by name
+PASS: the pause action pauses the run
+PASS: a paused run performs no logic steps
+PASS: a paused run keeps its head cell
+PASS: the event helper injects the pause action again
+PASS: pressing pause again resumes with the countdown
+PASS: the up arrow is injected before the reverse check
+PASS: the up arrow is accepted in the current logic step
+PASS: the down arrow is injected inside the same logic step
+PASS: a refused reverse turn plays no second turn cue
+PASS: the reverse down arrow does not replace the accepted turn
+PASS: the reverse down arrow leaves the logic heading east
+PASS: the step follows the accepted up turn, not the reverse
+PASS: the snake does not make a 180-degree move
+PASS: the up arrow steers the snake toward the north wall
+PASS: steering into the north wall ends the run
+PASS: the ended run reports a wall collision
+PASS: a wall hit plays one crash cue
+PASS: the event helper still injects keys after the run ended
+PASS: the event helper still injects pause after the run ended
+PASS: keys do not change the over state
+PASS: keys do not move the snake after the run ended
+PASS: keys do not change the heading after the run ended
+PASS: an over run performs no more logic steps
+PASS: every arena file in assets/data/arenas loads and validates
+PASS: the arena directory provides four arenas
+PASS: arenas load in file-name order
+PASS: two Classic arenas are provided
+PASS: a Maze arena is provided
+PASS: a Time Attack arena is provided
+PASS: arena_for_mode returns the first Classic file by name
+PASS: a second arena for the same mode is reported as a warning
+PASS: classic-12 is a 12x12 board
+PASS: classic-12 has no obstacles
+PASS: classic-12 spawns one food
+PASS: classic-12 starts at 8.0 cells/s
+PASS: classic-12 caps at 16.0 cells/s
+PASS: classic-16 is a 16x16 board
+PASS: classic-16 starts at [8, 8]
+PASS: classic-16 starts facing east
+PASS: classic-16 starts at 8.0 cells/s
+PASS: classic-16 caps at 16.0 cells/s
+PASS: classic-16 has no time limit
+PASS: maze-01 places sixteen obstacle cells
+PASS: maze-01 keeps two food on the board
+PASS: maze-01 has no time limit
+PASS: maze obstacles are inside the board and off the start cell
+PASS: time-attack-16 keeps three food on the board
+PASS: time-attack-16 has a time limit
+PASS: time-attack-16 ends after 90 seconds
+PASS: time-attack-16 starts at 7.0 cells/s
+PASS: the reference arena dict passes validation
+PASS: unknown keys are ignored and reported as a warning
+PASS: malformed JSON reports the file and line
+PASS: a non-object JSON document is rejected
+PASS: an unknown schema version is rejected
+PASS: a non-kebab-case id is rejected
+PASS: an unknown mode is rejected
+PASS: a non-integer column count is rejected
+PASS: a board narrower than 4 cells is rejected
+PASS: a board taller than 16 cells is rejected
+PASS: a non-object size is rejected
+PASS: zero food is rejected
+PASS: a fractional food count is rejected
+PASS: a starting speed below 4.0 is rejected
+PASS: a speed cap above 20.0 is rejected
+PASS: a speed cap below the initial speed is rejected
+PASS: a time limit on a Classic arena is rejected
+PASS: a Time Attack arena without a time limit is rejected
+PASS: a time limit above 600 seconds is rejected
+PASS: a start cell outside the board is rejected
+PASS: an unknown start direction is rejected
+PASS: a start cell with no room for the snake body is rejected
+PASS: an obstacle outside the board is rejected
+PASS: a duplicated obstacle is rejected
+PASS: an obstacle on the start cell is rejected
+PASS: an obstacle on the start space is rejected
+PASS: a missing food_max is rejected
+PASS: a missing start is rejected
+PASS: a missing obstacle list is rejected
+PASS: a duplicate id keeps only the first file
+PASS: a duplicate id is reported with the file name
+PASS: a broken file does not hide the valid arenas
+PASS: a broken file is reported in the load errors
+PASS: a missing arena directory is a readable error
+PASS: start() enters the countdown
+PASS: the initial snake has four segments
+PASS: the snake head starts on the arena start cell
+PASS: the second segment sits behind the head
+PASS: turns and steps are ignored during the countdown
+PASS: half a second does not finish the countdown
+PASS: the countdown hands over to playing
+PASS: a fresh run scores zero
+PASS: a fresh run fills food_max food
+PASS: a fresh run uses the initial speed
+PASS: step() reports a movement step
+PASS: the snake moves one cell east
+PASS: moving without food keeps the length
+PASS: the tail follows the body forward
+PASS: a 180-degree reverse turn is refused
+PASS: a refused reverse keeps the heading
+PASS: a diagonal direction is refused
+PASS: a repeat of the current direction is refused
+PASS: a perpendicular turn is queued
+PASS: the opposite of the queued direction is dropped
+PASS: the queued turn applies on the next step
+PASS: the head moved north
+PASS: the first of two queued turns is accepted
+PASS: the second queued turn is accepted
+PASS: a third turn is refused while the queue is full
+PASS: the first queued turn wins the step
+PASS: the second queued turn applies on the following step
+PASS: two fast reverse inputs do not kill the snake
+PASS: 0.05 s into a step runs no logic step yet
+PASS: the snake still heads east before the step ends
+PASS: a turn pressed mid-step is accepted immediately
+PASS: the accepted input does not change the logic direction before the step
+PASS: the accepted input moves nothing before the step
+PASS: the next step still runs on the unchanged cadence
+PASS: the next move follows the pressed direction
+PASS: the next move goes north instead of east
+PASS: one food is on the board for a Classic arena
+PASS: food spawns inside the arena
+PASS: food never spawns on the snake
+PASS: food never spawns on an obstacle
+PASS: the snake can reach the first food
+PASS: eating increments the food counter
+PASS: eating scores ten points
+PASS: eating grows the snake by one segment
+PASS: eating raises the speed by 0.2 cells/s
+PASS: food respawns up to food_max
+PASS: respawned food never lands on the snake
+PASS: respawned food takes a new cell
+PASS: food stays inside and off the snake across seeds
+PASS: Maze food avoids obstacles and fills food_max
+PASS: hitting the wall ends the run
+PASS: a wall hit is reported as wall
+PASS: a fatal wall step leaves the head in place
+PASS: hitting an obstacle ends the run
+PASS: an obstacle hit is reported as obstacle
+PASS: entering the cell the tail vacates is legal
+PASS: the head entered the vacated tail cell
+PASS: the snake grows before the self-collision check
+PASS: the snake has five segments before turning back
+PASS: turning back into the body ends the run
+PASS: a body hit is reported as self
+PASS: the snake reaches food on the capped arena
+PASS: the speed curve reaches the 6.2 cap after one food
+PASS: the step duration follows the current speed
+PASS: the snake reaches a second food on the capped arena
+PASS: the capped arena run ate two food
+PASS: speed never exceeds max_speed
+PASS: a board without free cells spawns no food
+PASS: a full board ends the run
+PASS: a full board reports cleared
+PASS: food_max above the free cell count only spawns the available food
+PASS: a board with two free cells is playable
+PASS: the first free-cell food is eaten
+PASS: the first food grows the snake
+PASS: the board is not cleared while food remains
+PASS: the last free-cell food is eaten
+PASS: the last food grows the snake
+PASS: filling the board ends the run
+PASS: filling the board reports cleared
+PASS: a cleared board keeps no food
+PASS: classic-12 starts playing after the countdown
+PASS: classic-12 starts with the shared four-segment snake
+PASS: classic-12 starts on its own start cell
+PASS: classic-12 fills its own food_max
+PASS: classic-12 starts at zero score
+PASS: classic-12 advances a logic step
+PASS: classic-12 moves along its own start direction
+PASS: classic-12 keeps playing after one step
+PASS: classic-16 starts playing after the countdown
+PASS: classic-16 starts with the shared four-segment snake
+PASS: classic-16 starts on its own start cell
+PASS: classic-16 fills its own food_max
+PASS: classic-16 starts at zero score
+PASS: classic-16 advances a logic step
+PASS: classic-16 moves along its own start direction
+PASS: classic-16 keeps playing after one step
+PASS: maze-01 starts playing after the countdown
+PASS: maze-01 starts with the shared four-segment snake
+PASS: maze-01 starts on its own start cell
+PASS: maze-01 fills its own food_max
+PASS: maze-01 starts at zero score
+PASS: maze-01 advances a logic step
+PASS: maze-01 moves along its own start direction
+PASS: maze-01 keeps playing after one step
+PASS: time-attack-16 starts playing after the countdown
+PASS: time-attack-16 starts with the shared four-segment snake
+PASS: time-attack-16 starts on its own start cell
+PASS: time-attack-16 fills its own food_max
+PASS: time-attack-16 starts at zero score
+PASS: time-attack-16 advances a logic step
+PASS: time-attack-16 moves along its own start direction
+PASS: time-attack-16 keeps playing after one step
+PASS: the injected clock session starts playing
+PASS: Time Attack keeps playing just below 90 seconds
+PASS: elapsed time comes from the injected clock
+PASS: Time Attack ends at 90 seconds
+PASS: the 90-second end reason is time_up
+PASS: pause() stops the session
+PASS: a paused session does not move
+PASS: resume() starts the countdown again
+PASS: movement waits for the resume countdown
+PASS: paused wall time is not counted by the time limit
+PASS: a Classic arena ignores the clock and has no time limit
+PASS: a collision at the time limit is reported before time_up
+PASS: a missing save file falls back to defaults
+PASS: default best scores are zero
+PASS: the default master volume is 0.8
+PASS: the default sfx volume is 0.8
+PASS: a fresh save has no runs
+PASS: a higher score is a new record
+PASS: a lower score is not a record
+PASS: an equal score is not a record
+PASS: the best score only increases
+PASS: the save writes to disk
+PASS: the save carries schema_version, best_scores, settings and total_runs
+PASS: the save writes keys in a stable sorted order
+PASS: no temp file is left after a write
+PASS: a version 1 save is writable
+PASS: a written save loads again
+PASS: the best score survives a round trip
+PASS: the master volume survives a round trip
+PASS: the sfx volume survives a round trip
+PASS: the run count survives a round trip
+PASS: a later higher score is a record
+PASS: the second save replaces the first
+PASS: the previous save is kept as save.bak
+PASS: save.bak holds the previous best score
+PASS: a corrupt save falls back to defaults
+PASS: a corrupt save loads default scores
+PASS: the corrupt file is renamed to save.corrupt-<ts>.json
+PASS: the quarantined file keeps its original text
+PASS: a corrupt save falls back to save.bak
+PASS: the backup best score is used
+PASS: a newer schema still loads its readable fields
+PASS: a newer schema makes the store read-only
+PASS: the newer schema best score is readable
+PASS: a newer schema uses default settings
+WARNING: save_store: refusing to overwrite a newer schema (2)
+   at: push_warning (core/variant/variant_utility.cpp:1033)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://src/logic/save_store.gd:331)
+       [1] save (res://src/logic/save_store.gd:70)
+       [2] _test_save_store (res://tests/run_tests.gd:1500)
+       [3] _run_tests (res://tests/run_tests.gd:68)
+PASS: a read-only store refuses to write
+PASS: the newer schema file is not overwritten
+PASS: a volume above 1 clamps to 1
+PASS: a volume below 0 clamps to 0
+PASS: a negative run count clamps to 0
+PASS: the save schema version is 1
+PASS: the audio cue table carries five cues
+PASS: every cue name has a table row
+PASS: turn lasts 20..500 ms
+PASS: turn uses a known waveform
+PASS: turn sits in 50..2000 Hz
+PASS: turn gain stays below 0 dB
+PASS: turn repeat interval is bounded
+PASS: turn attack fits inside its cue
+PASS: eat lasts 20..500 ms
+PASS: eat uses a known waveform
+PASS: eat sits in 50..2000 Hz
+PASS: eat gain stays below 0 dB
+PASS: eat repeat interval is bounded
+PASS: eat attack fits inside its cue
+PASS: speed_up lasts 20..500 ms
+PASS: speed_up uses a known waveform
+PASS: speed_up sits in 50..2000 Hz
+PASS: speed_up gain stays below 0 dB
+PASS: speed_up repeat interval is bounded
+PASS: speed_up attack fits inside its cue
+PASS: crash lasts 20..500 ms
+PASS: crash uses a known waveform
+PASS: crash sits in 50..2000 Hz
+PASS: crash gain stays below 0 dB
+PASS: crash repeat interval is bounded
+PASS: crash attack fits inside its cue
+PASS: ui_click lasts 20..500 ms
+PASS: ui_click uses a known waveform
+PASS: ui_click sits in 50..2000 Hz
+PASS: ui_click gain stays below 0 dB
+PASS: ui_click repeat interval is bounded
+PASS: ui_click attack fits inside its cue
+PASS: full volume is 0 dB
+PASS: half volume is about -6 dB
+PASS: zero volume maps to the mute floor
+PASS: a negative volume clamps to mute
+PASS: a volume above one clamps to 0 dB
+PASS: clamp_volume floors at zero
+PASS: clamp_volume caps at one
+PASS: the SFX bus exists
+PASS: the SFX bus sends to Master
+PASS: full SFX volume reaches the bus as 0 dB
+PASS: zero master volume mutes the Master bus
+PASS: zero SFX volume mutes the SFX bus
+PASS: a muted bus still schedules its cue
+PASS: restoring the default volume unmutes SFX
+PASS: the first turn cue is scheduled
+PASS: a repeat inside the interval is dropped
+PASS: a repeat after the interval is scheduled
+PASS: the turn cue count is two after the interval
+WARNING: audio_director: unknown cue 'unknown_cue' ignored
+   at: push_warning (core/variant/variant_utility.cpp:1033)
+   GDScript backtrace (most recent call first):
+       [0] try_play (res://src/audio/audio_director.gd:228)
+       [1] _test_audio_scheduling (res://tests/run_tests.gd:1617)
+       [2] _run_tests (res://tests/run_tests.gd:71)
+PASS: an unknown cue does not crash
+PASS: an unknown cue is not counted
+PASS: the cue signal fires only for scheduled cues
+PASS: the cue log opens
+PASS: the synthesized cue has one frame per sample
+PASS: the cue fades in from silence
+PASS: the cue fades out to silence
+PASS: the cue stays inside the sample range
+PASS: an unknown cue builds no frames
+PASS: the cue log records the scheduled order
+PASS: the settings fixture writes its save
+PASS: the master slider opens at 40
+PASS: the SFX slider opens at 60
+PASS: the mute switch opens off
+PASS: opening settings applies the stored SFX volume
+PASS: moving a slider updates the store
+PASS: moving a slider updates the Master bus in real time
+PASS: mute writes zero volumes
+PASS: mute silences the SFX bus
+PASS: unmute restores the previous volumes
+PASS: Esc closes the settings screen
+PASS: the settings save reloads from disk
+PASS: the master volume survives a restart
+PASS: the SFX volume survives a restart
+PASS: the accepted turn plays one turn cue
+PASS: eating plays at least one eat cue
+PASS: crossing a speed tier plays speed_up once
+PASS: the collision plays one crash cue
+PASS: the audio-log run ends on a collision
+PASS: the cue log contains all four wired events
+PASS: the cue log order is turn, eat, speed_up, crash
+PASS: a fresh launch shows the main menu
+PASS: the main menu is the first screen
+PASS: no game runs behind the main menu
+PASS: Play routes to the game
+PASS: Play creates the game scene
+PASS: Play releases the main menu
+PASS: Play starts Classic
+PASS: Main menu returns to the title screen
+PASS: returning to the menu drops the game scene
+PASS: choosing the Maze entry starts the maze-01 arena
+PASS: How to play opens its own screen
+PASS: the how-to-play page is loaded
+PASS: Esc leaves How to play for the main menu
+PASS: the Back button leaves How to play
+PASS: the main menu has a Settings button
+PASS: the main menu opens the settings overlay
+PASS: settings shares the app save store
+PASS: Back closes the settings overlay
+PASS: closing settings returns to the main menu
+PASS: the pause menu has a Settings button
+PASS: the pause menu opens the settings overlay
+PASS: closing settings returns to the game
+PASS: the HUD shows the score
+PASS: the HUD shows the snake length
+PASS: the HUD shows the speed in cells/s
+PASS: the HUD shows the run time
+PASS: the HUD shows the best score
+PASS: the HUD clock formats minutes and seconds
+PASS: the pause menu starts hidden
+PASS: the end panel starts hidden
+PASS: Esc pauses the run
+PASS: the pause menu opens
+PASS: the pause menu focuses Resume
+PASS: a paused run takes no logic steps
+PASS: a paused snake does not move
+PASS: a paused run ignores turns
+PASS: Resume restarts the countdown from the pause point
+PASS: the pause menu closes on resume
+PASS: the snake stays on the pause cell during the resume countdown
+PASS: the resume countdown hands control back
+PASS: the run reaches food before the end panel
+PASS: the HUD score updates from the stats signal
+PASS: the HUD length updates from the stats signal
+PASS: the HUD speed updates from the stats signal
+PASS: the run ends after turning into the wall
+PASS: the end panel opens when the run ends
+PASS: the end panel shows the run score
+PASS: the end panel shows the new best score
+PASS: a record run is marked New best
+PASS: the end panel focuses Retry
+PASS: the pause menu stays closed after the run ends
+PASS: the best score is recorded
+PASS: the best score is persisted to disk
+PASS: Esc on the end panel asks for the main menu
+PASS: Retry starts a fresh countdown
+PASS: Retry starts from zero score
+PASS: Retry hides the end panel
+PASS: Retry keeps the best score
+PASS: 555 checks passed
+[test] PASS

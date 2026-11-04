@@ -215,6 +215,9 @@ func _test_ui_screens() -> void:
 	var play := menu.get_node_or_null("Center/Panel/Margin/VBox/PlayButton") as Button
 	var how_to := menu.get_node_or_null("Center/Panel/Margin/VBox/HowToPlayButton") as Button
 	var quit := menu.get_node_or_null("Center/Panel/Margin/VBox/QuitButton") as Button
+	var classic := menu.get_node_or_null("Center/Panel/Margin/VBox/ModeRow/ClassicButton") as Button
+	var maze := menu.get_node_or_null("Center/Panel/Margin/VBox/ModeRow/MazeButton") as Button
+	var time_attack := menu.get_node_or_null("Center/Panel/Margin/VBox/ModeRow/TimeAttackButton") as Button
 	_check(play != null and play.text == "Play", "the main menu shows Play")
 	_check(how_to != null and how_to.text == "How to play", "the main menu shows How to play")
 	_check(quit != null and quit.text == "Quit", "the main menu shows Quit")
@@ -223,9 +226,37 @@ func _test_ui_screens() -> void:
 		play != null and play.custom_minimum_size.y >= AppTheme.BUTTON_MINIMUM.y,
 		"menu buttons keep a 44 px target"
 	)
+	var mode_buttons: Array[Button] = [classic, maze, time_attack]
+	var mode_names: Array[String] = [
+		ModeCatalog.display_name(ArenaData.MODE_CLASSIC),
+		ModeCatalog.display_name(ArenaData.MODE_MAZE),
+		ModeCatalog.display_name(ArenaData.MODE_TIME_ATTACK),
+	]
+	var modes_ok := true
+	for index in range(mode_buttons.size()):
+		var mode_button: Button = mode_buttons[index]
+		if mode_button == null or mode_button.text != mode_names[index]:
+			modes_ok = false
+	_check(modes_ok, "the main menu shows the three mode entries")
 	_check(
-		play != null and play.focus_neighbor_bottom == play.get_path_to(how_to),
+		classic != null and classic.button_pressed
+		and maze != null and not maze.button_pressed
+		and time_attack != null and not time_attack.button_pressed,
+		"Classic is the highlighted mode by default"
+	)
+	_check(
+		play != null and classic != null and maze != null
+		and play.focus_neighbor_bottom == play.get_path_to(classic)
+		and classic.focus_neighbor_right == classic.get_path_to(maze),
 		"the main menu wires explicit focus neighbours"
+	)
+	_check(
+		play != null and classic != null and maze != null and time_attack != null
+		and play.focus_next == play.get_path_to(classic)
+		and classic.focus_next == classic.get_path_to(maze)
+		and maze.focus_next == maze.get_path_to(time_attack)
+		and time_attack.focus_next == time_attack.get_path_to(how_to),
+		"the keyboard focus order runs through the three mode entries"
 	)
 	root.remove_child(menu)
 	menu.free()
@@ -1787,6 +1818,21 @@ func _test_app_shell() -> void:
 	shell.return_to_main_menu()
 	_check(shell.current_screen() == AppRoot.Screen.MAIN_MENU, "Main menu returns to the title screen")
 	_check(shell.game_node() == null, "returning to the menu drops the game scene")
+
+	var mode_menu := shell.menu_node()
+	var maze_entry: Button = null
+	if mode_menu != null:
+		maze_entry = mode_menu.get_node_or_null("Center/Panel/Margin/VBox/ModeRow/MazeButton") as Button
+	if maze_entry != null:
+		maze_entry.emit_signal("pressed")
+	_check(
+		shell.current_screen() == AppRoot.Screen.GAME
+		and shell.game_node() != null
+		and shell.game_node()._arena != null
+		and shell.game_node()._arena.id == "maze-01",
+		"choosing the Maze entry starts the maze-01 arena"
+	)
+	shell.return_to_main_menu()
 
 	shell.open_how_to_play()
 	_check(shell.current_screen() == AppRoot.Screen.HOW_TO_PLAY, "How to play opens its own screen")
