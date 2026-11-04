@@ -1415,6 +1415,10 @@ func _test_save_store() -> void:
 		"the default sfx volume is 0.8"
 	)
 	_check(empty.total_runs() == 0, "a fresh save has no runs")
+	_check(
+		empty.last_mode() == ModeCatalog.DEFAULT_MODE,
+		"a fresh save opens the menu on the default mode"
+	)
 
 	_check(empty.record_score(ArenaData.MODE_CLASSIC, 120), "a higher score is a new record")
 	_check(not empty.record_score(ArenaData.MODE_CLASSIC, 80), "a lower score is not a record")
@@ -1423,6 +1427,8 @@ func _test_save_store() -> void:
 	empty.record_run_started()
 	empty.set_master_volume(0.4)
 	empty.set_sfx_volume(0.6)
+	empty.set_last_mode(ArenaData.MODE_MAZE)
+	_check(empty.last_mode() == ArenaData.MODE_MAZE, "choosing a mode writes it back as last_mode")
 	_check(empty.save(), "the save writes to disk")
 
 	var saved_text := _read_text_file(path)
@@ -1447,6 +1453,7 @@ func _test_save_store() -> void:
 	_check(is_equal_approx(reloaded.master_volume(), 0.4), "the master volume survives a round trip")
 	_check(is_equal_approx(reloaded.sfx_volume(), 0.6), "the sfx volume survives a round trip")
 	_check(reloaded.total_runs() == 1, "the run count survives a round trip")
+	_check(reloaded.last_mode() == ArenaData.MODE_MAZE, "the last mode survives a round trip")
 
 	_check(reloaded.record_score(ArenaData.MODE_CLASSIC, 150), "a later higher score is a record")
 	_check(reloaded.save(), "the second save replaces the first")
@@ -1510,10 +1517,15 @@ func _test_save_store() -> void:
 		"schema_version": 1,
 		"best_scores": {},
 		"total_runs": -5,
+		"last_mode": "triangle",
 		"settings": {"master_volume": 5.0, "sfx_volume": -1.0},
 	}))
 	var clamped := SaveStore.new(path)
 	clamped.load_from_disk()
+	_check(
+		clamped.last_mode() == ModeCatalog.DEFAULT_MODE,
+		"an unknown last_mode falls back to Classic"
+	)
 	_check(is_equal_approx(clamped.master_volume(), 1.0), "a volume above 1 clamps to 1")
 	_check(is_equal_approx(clamped.sfx_volume(), 0.0), "a volume below 0 clamps to 0")
 	_check(clamped.total_runs() == 0, "a negative run count clamps to 0")
