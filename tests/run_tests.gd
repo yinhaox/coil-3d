@@ -49,6 +49,7 @@ func _run_tests() -> void:
 	_test_session_driver()
 	_test_snake_view()
 	_test_turn_preview()
+	_test_mode_catalog()
 	_test_start_arena_selection()
 	_test_input_actions()
 	_test_real_input_events()
@@ -484,6 +485,40 @@ func _test_turn_preview() -> void:
 	view.free()
 
 
+func _test_mode_catalog() -> void:
+	var expected_modes: Array[String] = [
+		ArenaData.MODE_CLASSIC,
+		ArenaData.MODE_MAZE,
+		ArenaData.MODE_TIME_ATTACK,
+	]
+	_check(ModeCatalog.MODES == expected_modes, "the mode catalog lists the three 1.0 modes")
+	var default_files := {
+		ArenaData.MODE_CLASSIC: "classic-12.json",
+		ArenaData.MODE_MAZE: "maze-01.json",
+		ArenaData.MODE_TIME_ATTACK: "time-attack-16.json",
+	}
+	var display_names := {
+		ArenaData.MODE_CLASSIC: "Classic",
+		ArenaData.MODE_MAZE: "Maze",
+		ArenaData.MODE_TIME_ATTACK: "Time Attack",
+	}
+	var files_ok := true
+	var names_ok := true
+	for mode_name: String in ModeCatalog.MODES:
+		if ModeCatalog.default_arena_file(mode_name) != default_files[mode_name]:
+			files_ok = false
+		if ModeCatalog.display_name(mode_name) != display_names[mode_name]:
+			names_ok = false
+	_check(files_ok, "each mode names its default arena file")
+	_check(names_ok, "each mode names the text its card shows")
+	_check(ModeCatalog.resolve_mode("zen") == ArenaData.MODE_CLASSIC, "an unknown mode resolves to Classic")
+	_check(
+		ModeCatalog.default_arena_file("zen") == "classic-12.json"
+		and ModeCatalog.display_name("zen") == "Classic",
+		"an unknown mode falls back to the Classic file and name"
+	)
+
+
 func _test_start_arena_selection() -> void:
 	var loaded := ArenaData.load_directory(ARENAS_DIRECTORY)
 	if not loaded.is_ok():
@@ -493,6 +528,26 @@ func _test_start_arena_selection() -> void:
 	_check(
 		default_arena != null and default_arena.id == "classic-12",
 		"startup picks the first Classic arena"
+	)
+	var classic := GameController.select_start_arena(loaded, "", ArenaData.MODE_CLASSIC)
+	_check(
+		classic != null and classic.id == "classic-12",
+		"mode classic starts on the default classic-12 arena"
+	)
+	var maze_mode := GameController.select_start_arena(loaded, "", ArenaData.MODE_MAZE)
+	_check(
+		maze_mode != null and maze_mode.id == "maze-01",
+		"mode maze starts on the default maze-01 arena"
+	)
+	var time_attack := GameController.select_start_arena(loaded, "", ArenaData.MODE_TIME_ATTACK)
+	_check(
+		time_attack != null and time_attack.id == "time-attack-16",
+		"mode time_attack starts on the default time-attack-16 arena"
+	)
+	var unknown_mode := GameController.select_start_arena(loaded, "", "zen")
+	_check(
+		unknown_mode != null and unknown_mode.id == "classic-12",
+		"an unknown mode falls back to the Classic arena"
 	)
 	var maze := GameController.select_start_arena(loaded, "maze-01")
 	_check(maze != null and maze.id == "maze-01", "--arena selects another arena by id")
