@@ -1,0 +1,81 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/ui/end_panel.gd" id="1_end"]
+
+[node name="EndPanel" type="CanvasLayer"]
+layer = 20
+visible = false
+script = ExtResource("1_end")
+
+[node name="Root" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="Panel" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"DimPanel"
+
+[node name="Center" type="CenterContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="Root/Center"]
+layout_mode = 2
+custom_minimum_size = Vector2(460, 0)
+
+[node name="Margin" type="MarginContainer" parent="Root/Center/Panel"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Root/Center/Panel/Margin"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="Root/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"PanelTitleLabel"
+horizontal_alignment = 1
+
+[node name="ReasonLabel" type="Label" parent="Root/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ScoreLabel" type="Label" parent="Root/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"StatLabel"
+horizontal_alignment = 1
+
+[node name="BestLabel" type="Label" parent="Root/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"StatLabel"
+horizontal_alignment = 1
+
+[node name="NewBestLabel" type="Label" parent="Root/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"AccentLabel"
+horizontal_alignment = 1
+
+[node name="RetryButton" type="Button" parent="Root/Center/Panel/Margin/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(44, 44)
+
+[node name="MainMenuButton" type="Button" parent="Root/Center/Panel/Margin/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(44, 44)
+
+[connection signal="pressed" from="Root/Center/Panel/Margin/VBox/RetryButton" to="." method="_on_retry_pressed"]
+[connection signal="pressed" from="Root/Center/Panel/Margin/VBox/MainMenuButton" to="." method="_on_main_menu_pressed"]

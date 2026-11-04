@@ -1,0 +1,6 @@
+[capture] removed stale file: .\production\qa\evidence\ui-shell-and-save\new-best.png
+[capture] target: production\qa\evidence\ui-shell-and-save\new-best.png
+[capture] user arguments: --screen=game --scenario=new-best --save-path=user://evidence/new-best/save.json --fresh-save
+[capture] waiting up to 60s for the PNG
+$ godot --path . -- --studio-capture=.\production\qa\evidence\ui-shell-and-save\new-best.png --screen=game --scenario=new-best --save-path=user://evidence/new-best/save.json --fresh-save
+[capture] OK: production\qa\evidence\ui-shell-and-save\new-best.png (57337 bytes)
