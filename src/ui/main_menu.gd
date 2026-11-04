@@ -9,6 +9,11 @@ signal how_to_play_requested
 signal settings_requested
 signal quit_requested
 
+const VERSION_SETTING := "application/config/version"
+const FOOTER_HINT := "Arrows / WASD steer — Esc pauses"
+const FOOTER_VERSION_SEPARATOR := "  ·  "
+const VERSION_PREFIX := "v"
+
 ## Injected by AppRoot before the menu enters the tree; a standalone instance
 ## (tests) simply plays no click cue.
 var audio: AudioDirector = null
@@ -30,7 +35,7 @@ func _ready() -> void:
 	_how_to_play_button.text = tr("How to play")
 	_settings_button.text = tr("Settings")
 	_quit_button.text = tr("Quit")
-	_footer_label.text = tr("Arrows / WASD steer — Esc pauses")
+	_footer_label.text = _footer_text()
 	var buttons: Array[Button] = [
 		_play_button, _how_to_play_button, _settings_button, _quit_button
 	]
@@ -38,6 +43,19 @@ func _ready() -> void:
 	if audio != null:
 		audio.wire_buttons(buttons)
 	_play_button.grab_focus()
+
+
+## The version declared in project.godot; empty when the project sets none.
+static func project_version() -> String:
+	return str(ProjectSettings.get_setting(VERSION_SETTING, "")).strip_edges()
+
+
+func _footer_text() -> String:
+	var hint := tr(FOOTER_HINT)
+	var version := project_version()
+	if version.is_empty():
+		return hint
+	return hint + FOOTER_VERSION_SEPARATOR + VERSION_PREFIX + version
 
 
 func _on_play_pressed() -> void:
