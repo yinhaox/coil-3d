@@ -1,0 +1,6 @@
+[capture] removed stale file: C:\Users\yinha\.dsh\state\superagent-coil\work\audio-and-settings-bad76c86a31f\production\qa\evidence\audio-and-settings\settings.png
+[capture] target: production\qa\evidence\audio-and-settings\settings.png
+[capture] user arguments: --screen=settings --save-path=user://evidence/audio-and-settings/save.json --fresh-save
+[capture] waiting up to 60s for the PNG
+$ godot --path . -- --studio-capture=C:\Users\yinha\.dsh\state\superagent-coil\work\audio-and-settings-bad76c86a31f\production\qa\evidence\audio-and-settings\settings.png --screen=settings --save-path=user://evidence/audio-and-settings/save.json --fresh-save
+[capture] OK: production\qa\evidence\audio-and-settings\settings.png (25114 bytes)

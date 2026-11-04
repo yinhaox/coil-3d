@@ -13,6 +13,7 @@ const MAIN_SCENE_PATH = "res://scenes/main.tscn"
 const GAME_SCENE_PATH := "res://scenes/game.tscn"
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/main_menu.tscn"
 const HOW_TO_PLAY_SCENE_PATH := "res://scenes/ui/how_to_play.tscn"
+const SETTINGS_SCENE_PATH := "res://scenes/ui/settings.tscn"
 const CAPTURE_SCRIPT_PATH = "res://addons/studio_capture/capture.gd"
 const INPUT_EVENTS := preload("res://tests/input_events.gd")
 
@@ -23,6 +24,7 @@ const TEST_INPUT_SAVE_DIRECTORY := "user://test_input_events"
 const TEST_SAVE_DIRECTORY := "user://test_save_store"
 const TEST_SHELL_DIRECTORY := "user://test_app_shell"
 const TEST_PANEL_DIRECTORY := "user://test_hud_end"
+const TEST_AUDIO_DIRECTORY := "user://test_audio_settings"
 const MAX_TEST_STEPS := 64
 
 var _passed := 0
@@ -63,8 +65,17 @@ func _run_tests() -> void:
 	_test_modes_share_one_logic()
 	_test_time_attack_clock()
 	_test_save_store()
+	_test_audio_cue_table()
+	_test_audio_volume()
+	_test_audio_scheduling()
+	_test_audio_frames_and_log()
+	_test_settings_screen()
+	_test_game_audio_wiring()
 	_test_app_shell()
 	_test_hud_pause_and_end_panel()
+	# Give the deletion queue one frame so screens queued free by the app shell
+	# do not outlive the run as leaked objects.
+	await process_frame
 
 	if _failed == 0:
 		print("PASS: %d checks passed" % _passed)
@@ -517,6 +528,10 @@ func _test_real_input_events() -> void:
 
 	_check(INPUT_EVENTS.tap_key(KEY_UP), "the event helper injects an up-arrow press and release")
 	_check(
+		game._audio.cue_count(AudioDirector.CUE_TURN) == 1,
+		"an accepted turn plays exactly one turn cue"
+	)
+	_check(
 		game._snake_view.previewed_direction() == SnakeSession.NORTH,
 		"the up arrow previews a north turn on its own frame"
 	)
@@ -570,6 +585,10 @@ func _test_real_input_events() -> void:
 	)
 	_check(INPUT_EVENTS.tap_key(KEY_DOWN), "the down arrow is injected inside the same logic step")
 	_check(
+		reverse_game._audio.cue_count(AudioDirector.CUE_TURN) == 1,
+		"a refused reverse turn plays no second turn cue"
+	)
+	_check(
 		reverse_game._snake_view.previewed_direction() == SnakeSession.NORTH,
 		"the reverse down arrow does not replace the accepted turn"
 	)
@@ -601,6 +620,11 @@ func _test_real_input_events() -> void:
 	_check(
 		over_session.end_reason() == SnakeSession.EndReason.WALL,
 		"the ended run reports a wall collision"
+	)
+	over_game._emit_status_if_changed()
+	_check(
+		over_game._audio.cue_count(AudioDirector.CUE_CRASH) == 1,
+		"a wall hit plays one crash cue"
 	)
 	var over_head: Vector2i = over_session.head_cell()
 	var over_direction: Vector2i = over_session.direction()
@@ -1404,6 +1428,270 @@ func _test_save_store() -> void:
 	_remove_temp_directory(directory)
 
 
+func _test_audio_cue_table() -> void:
+	_check(AudioDirector.CUE_NAMES.size() == 5, "the audio cue table carries five cues")
+	var has_all := true
+	for cue: String in AudioDirector.CUE_NAMES:
+		if not AudioDirector.CUE_TABLE.has(cue):
+			has_all = false
+	_check(has_all, "every cue name has a table row")
+	for cue: String in AudioDirector.CUE_NAMES:
+		var spec: Dictionary = AudioDirector.CUE_TABLE[cue]
+		var duration := float(spec["duration"])
+		_check(duration >= 0.02 and duration <= 0.5, "%s lasts 20..500 ms" % cue)
+		_check(
+			AudioDirector.WAVEFORMS.has(str(spec["waveform"])),
+			"%s uses a known waveform" % cue
+		)
+		var frequency := float(spec["base_frequency"])
+		_check(frequency >= 50.0 and frequency <= 2000.0, "%s sits in 50..2000 Hz" % cue)
+		var gain := float(spec["gain_db"])
+		_check(gain <= 0.0 and gain >= -40.0, "%s gain stays below 0 dB" % cue)
+		var interval := float(spec["min_interval"])
+		_check(interval >= 0.02 and interval <= 1.0, "%s repeat interval is bounded" % cue)
+		var attack := float(spec["attack"])
+		_check(attack >= 0.0 and attack < duration, "%s attack fits inside its cue" % cue)
+
+
+func _test_audio_volume() -> void:
+	_check(is_equal_approx(AudioDirector.volume_to_db(1.0), 0.0), "full volume is 0 dB")
+	_check(
+		absf(AudioDirector.volume_to_db(0.5) - (-6.0206)) < 0.001,
+		"half volume is about -6 dB"
+	)
+	_check(
+		is_equal_approx(AudioDirector.volume_to_db(0.0), AudioDirector.MIN_DB),
+		"zero volume maps to the mute floor"
+	)
+	_check(
+		is_equal_approx(AudioDirector.volume_to_db(-1.0), AudioDirector.MIN_DB),
+		"a negative volume clamps to mute"
+	)
+	_check(
+		is_equal_approx(AudioDirector.volume_to_db(2.0), 0.0),
+		"a volume above one clamps to 0 dB"
+	)
+	_check(is_equal_approx(AudioDirector.clamp_volume(-0.5), 0.0), "clamp_volume floors at zero")
+	_check(is_equal_approx(AudioDirector.clamp_volume(1.5), 1.0), "clamp_volume caps at one")
+
+	AudioDirector.ensure_buses()
+	var sfx_index := AudioServer.get_bus_index(AudioDirector.SFX_BUS)
+	var master_index := AudioServer.get_bus_index(AudioDirector.MASTER_BUS)
+	_check(sfx_index != -1, "the SFX bus exists")
+	_check(
+		AudioServer.get_bus_send(sfx_index) == AudioDirector.MASTER_BUS,
+		"the SFX bus sends to Master"
+	)
+	AudioDirector.apply_volumes(1.0, 1.0)
+	_check(
+		is_equal_approx(AudioServer.get_bus_volume_db(sfx_index), 0.0),
+		"full SFX volume reaches the bus as 0 dB"
+	)
+	AudioDirector.apply_volumes(0.0, 0.0)
+	_check(AudioServer.is_bus_mute(master_index), "zero master volume mutes the Master bus")
+	_check(AudioServer.is_bus_mute(sfx_index), "zero SFX volume mutes the SFX bus")
+	var muted_director := AudioDirector.new()
+	_check(
+		muted_director.try_play(AudioDirector.CUE_EAT, 1),
+		"a muted bus still schedules its cue"
+	)
+	muted_director.free()
+	AudioDirector.apply_volumes(
+		SaveStore.DEFAULT_MASTER_VOLUME, SaveStore.DEFAULT_SFX_VOLUME
+	)
+	_check(not AudioServer.is_bus_mute(sfx_index), "restoring the default volume unmutes SFX")
+
+
+func _test_audio_scheduling() -> void:
+	var director := AudioDirector.new()
+	var turn_interval := float(AudioDirector.CUE_TABLE[AudioDirector.CUE_TURN]["min_interval"])
+	var interval_ms := int(round(turn_interval * 1000.0))
+	var scheduled := {"count": 0}
+	director.cue_scheduled.connect(func(_cue: String) -> void: scheduled["count"] += 1)
+	_check(director.try_play(AudioDirector.CUE_TURN, 1000), "the first turn cue is scheduled")
+	_check(
+		not director.try_play(AudioDirector.CUE_TURN, 1000 + interval_ms - 1),
+		"a repeat inside the interval is dropped"
+	)
+	_check(
+		director.try_play(AudioDirector.CUE_TURN, 1000 + interval_ms),
+		"a repeat after the interval is scheduled"
+	)
+	_check(
+		director.cue_count(AudioDirector.CUE_TURN) == 2,
+		"the turn cue count is two after the interval"
+	)
+	_check(not director.try_play("unknown_cue", 5000), "an unknown cue does not crash")
+	_check(director.cue_count("unknown_cue") == 0, "an unknown cue is not counted")
+	_check(scheduled["count"] == 2, "the cue signal fires only for scheduled cues")
+	director.free()
+
+
+func _test_audio_frames_and_log() -> void:
+	var directory := TEST_AUDIO_DIRECTORY
+	_remove_temp_directory(directory)
+	DirAccess.make_dir_recursive_absolute(directory)
+	var director := AudioDirector.new()
+	director.open_cue_log(directory + "/cue.log")
+	_check(director.is_logging(), "the cue log opens")
+	var spec: Dictionary = AudioDirector.CUE_TABLE[AudioDirector.CUE_TURN]
+	var frames := AudioDirector.build_frames(AudioDirector.CUE_TURN)
+	var expected := roundi(float(spec["duration"]) * AudioDirector.SAMPLE_RATE)
+	_check(frames.size() == expected, "the synthesized cue has one frame per sample")
+	_check(absf(frames[0].x) < 0.0001, "the cue fades in from silence")
+	_check(
+		absf(frames[frames.size() - 1].x) < 0.01,
+		"the cue fades out to silence"
+	)
+	var peak := 0.0
+	for frame in frames:
+		peak = maxf(peak, absf(frame.x))
+	_check(peak > 0.0 and peak <= 1.0, "the cue stays inside the sample range")
+	_check(
+		AudioDirector.build_frames("unknown_cue").is_empty(),
+		"an unknown cue builds no frames"
+	)
+	director.try_play(AudioDirector.CUE_TURN, 0)
+	director.try_play(AudioDirector.CUE_EAT, 0)
+	director.close_cue_log()
+	var lines := _read_text_file(directory + "/cue.log").split("\n", false)
+	_check(
+		lines.size() == 2 and lines[0] == "turn" and lines[1] == "eat",
+		"the cue log records the scheduled order"
+	)
+	director.free()
+	_remove_temp_directory(directory)
+
+
+func _test_settings_screen() -> void:
+	var directory := TEST_AUDIO_DIRECTORY
+	_remove_temp_directory(directory)
+	DirAccess.make_dir_recursive_absolute(directory)
+	var path := directory + "/save.json"
+	var store := SaveStore.new(path)
+	store.load_from_disk()
+	store.set_master_volume(0.4)
+	store.set_sfx_volume(0.6)
+	_check(store.save(), "the settings fixture writes its save")
+	var packed := load(SETTINGS_SCENE_PATH) as PackedScene
+	if packed == null:
+		_check(false, "the settings scene loads")
+		return
+	var screen := packed.instantiate() as SettingsScreen
+	if screen == null:
+		_check(false, "the settings scene instantiates")
+		return
+	screen.store = store
+	root.add_child(screen)
+	_check(is_equal_approx(screen.master_percent(), 40.0), "the master slider opens at 40")
+	_check(is_equal_approx(screen.sfx_percent(), 60.0), "the SFX slider opens at 60")
+	_check(not screen.is_muted(), "the mute switch opens off")
+	var sfx_index := AudioServer.get_bus_index(AudioDirector.SFX_BUS)
+	_check(
+		absf(
+			AudioServer.get_bus_volume_db(sfx_index) - AudioDirector.volume_to_db(0.6)
+		) < 0.001,
+		"opening settings applies the stored SFX volume"
+	)
+	var master_slider := screen.get_node(
+		"Root/Center/Panel/Margin/VBox/MasterRow/MasterSlider"
+	) as HSlider
+	master_slider.value = 50.0
+	_check(is_equal_approx(store.master_volume(), 0.5), "moving a slider updates the store")
+	var master_index := AudioServer.get_bus_index(AudioDirector.MASTER_BUS)
+	_check(
+		absf(
+			AudioServer.get_bus_volume_db(master_index) - AudioDirector.volume_to_db(0.5)
+		) < 0.001,
+		"moving a slider updates the Master bus in real time"
+	)
+	var mute_check := screen.get_node(
+		"Root/Center/Panel/Margin/VBox/MuteCheck"
+	) as CheckButton
+	mute_check.button_pressed = true
+	_check(
+		is_equal_approx(store.master_volume(), 0.0)
+		and is_equal_approx(store.sfx_volume(), 0.0),
+		"mute writes zero volumes"
+	)
+	_check(AudioServer.is_bus_mute(sfx_index), "mute silences the SFX bus")
+	mute_check.button_pressed = false
+	_check(
+		is_equal_approx(store.master_volume(), 0.5)
+		and is_equal_approx(store.sfx_volume(), 0.6),
+		"unmute restores the previous volumes"
+	)
+	var closed := {"value": false}
+	screen.closed.connect(func() -> void: closed["value"] = true)
+	var cancel := InputEventAction.new()
+	cancel.action = &"ui_cancel"
+	cancel.pressed = true
+	screen._unhandled_input(cancel)
+	_check(closed["value"], "Esc closes the settings screen")
+	root.remove_child(screen)
+	screen.free()
+	var reloaded := SaveStore.new(path)
+	_check(reloaded.load_from_disk(), "the settings save reloads from disk")
+	_check(is_equal_approx(reloaded.master_volume(), 0.5), "the master volume survives a restart")
+	_check(is_equal_approx(reloaded.sfx_volume(), 0.6), "the SFX volume survives a restart")
+	_remove_temp_directory(directory)
+
+
+## Drives the --audio-log scripted run through the real controller handlers and
+## proves the cue order the evidence log reports: turn, eat, speed_up, crash.
+func _test_game_audio_wiring() -> void:
+	var directory := TEST_AUDIO_DIRECTORY
+	_remove_temp_directory(directory)
+	DirAccess.make_dir_recursive_absolute(directory)
+	var game := _spawn_game(directory + "/save.json")
+	if game == null:
+		return
+	game._audio.open_cue_log(directory + "/cue.log")
+	game._stage_audio_log()
+	game._audio.close_cue_log()
+	_check(
+		game._audio.cue_count(AudioDirector.CUE_TURN) == 1,
+		"the accepted turn plays one turn cue"
+	)
+	_check(
+		game._audio.cue_count(AudioDirector.CUE_EAT) >= 1,
+		"eating plays at least one eat cue"
+	)
+	_check(
+		game._audio.cue_count(AudioDirector.CUE_SPEED_UP) == 1,
+		"crossing a speed tier plays speed_up once"
+	)
+	_check(
+		game._audio.cue_count(AudioDirector.CUE_CRASH) == 1,
+		"the collision plays one crash cue"
+	)
+	_check(
+		GameController.COLLISION_END_REASONS.has(game._session.end_reason()),
+		"the audio-log run ends on a collision"
+	)
+	var lines := _read_text_file(directory + "/cue.log").split("\n", false)
+	var first := {}
+	for index in range(lines.size()):
+		if not first.has(lines[index]):
+			first[lines[index]] = index
+	_check(
+		first.has(AudioDirector.CUE_TURN)
+		and first.has(AudioDirector.CUE_EAT)
+		and first.has(AudioDirector.CUE_SPEED_UP)
+		and first.has(AudioDirector.CUE_CRASH),
+		"the cue log contains all four wired events"
+	)
+	if first.has(AudioDirector.CUE_TURN) and first.has(AudioDirector.CUE_CRASH):
+		_check(
+			int(first[AudioDirector.CUE_TURN]) < int(first[AudioDirector.CUE_EAT])
+			and int(first[AudioDirector.CUE_EAT]) < int(first[AudioDirector.CUE_SPEED_UP])
+			and int(first[AudioDirector.CUE_SPEED_UP]) < int(first[AudioDirector.CUE_CRASH]),
+			"the cue log order is turn, eat, speed_up, crash"
+		)
+	_release_game(game)
+	_remove_temp_directory(directory)
+
+
 func _test_app_shell() -> void:
 	var directory := TEST_SHELL_DIRECTORY
 	_remove_temp_directory(directory)
@@ -1462,6 +1750,51 @@ func _test_app_shell() -> void:
 		shell.current_screen() == AppRoot.Screen.MAIN_MENU,
 		"the Back button leaves How to play"
 	)
+
+	var open_menu := shell.menu_node()
+	var menu_settings: Button = null
+	if open_menu != null:
+		menu_settings = open_menu.get_node_or_null(
+			"Center/Panel/Margin/VBox/SettingsButton"
+		) as Button
+	_check(menu_settings != null, "the main menu has a Settings button")
+	if menu_settings != null:
+		menu_settings.emit_signal("pressed")
+	_check(shell.settings_node() != null, "the main menu opens the settings overlay")
+	if shell.settings_node() != null:
+		_check(
+			shell.settings_node().store == shell.save_store(),
+			"settings shares the app save store"
+		)
+		var settings_back := shell.settings_node().get_node(
+			"Root/Center/Panel/Margin/VBox/BackButton"
+		) as Button
+		settings_back.emit_signal("pressed")
+	_check(shell.settings_node() == null, "Back closes the settings overlay")
+	_check(
+		shell.current_screen() == AppRoot.Screen.MAIN_MENU,
+		"closing settings returns to the main menu"
+	)
+
+	var settings_menu := shell.menu_node()
+	if settings_menu != null:
+		(settings_menu.get_node("Center/Panel/Margin/VBox/PlayButton") as Button).emit_signal(
+			"pressed"
+		)
+	var overlay_game := shell.game_node()
+	var pause_settings: Button = null
+	if overlay_game != null:
+		pause_settings = overlay_game.get_node_or_null(
+			"PauseMenu/Root/Center/Panel/Margin/VBox/SettingsButton"
+		) as Button
+	_check(pause_settings != null, "the pause menu has a Settings button")
+	if pause_settings != null:
+		pause_settings.emit_signal("pressed")
+	_check(shell.settings_node() != null, "the pause menu opens the settings overlay")
+	if shell.settings_node() != null:
+		shell.settings_node().close()
+	_check(shell.settings_node() == null, "closing settings returns to the game")
+
 	root.remove_child(shell)
 	shell.free()
 	_remove_temp_directory(directory)

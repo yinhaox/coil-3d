@@ -14,6 +14,10 @@ Touching a wall, a block or your own body ends the run.
 
 Arrows or WASD steer. Esc pauses the run."""
 
+## Injected by AppRoot before the page enters the tree; a standalone instance
+## (tests) simply plays no click cue.
+var audio: AudioDirector = null
+
 @onready var _title_label: Label = $Center/Panel/Margin/VBox/TitleLabel
 @onready var _body_label: Label = $Center/Panel/Margin/VBox/BodyLabel
 @onready var _back_button: Button = $Center/Panel/Margin/VBox/BackButton
@@ -26,6 +30,8 @@ func _ready() -> void:
 	_back_button.text = tr("Back")
 	var buttons: Array[Button] = [_back_button]
 	FocusRing.wire_vertical(buttons)
+	if audio != null:
+		audio.wire_buttons(buttons)
 	_back_button.grab_focus()
 
 
