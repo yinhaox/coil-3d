@@ -68,6 +68,11 @@ const FRESH_SAVE_ARGUMENT := "fresh-save"
 ## the node enters the tree.
 @export var save_path: String = SaveStore.DEFAULT_PATH
 
+## Mode the menu entry selected; its default arena is the start arena unless
+## `--arena` names one file explicitly (design/game-modes.md rule 1). The app
+## shell injects it before the node enters the tree, like save_path.
+@export var start_mode: String = ModeCatalog.DEFAULT_MODE
+
 ## Shared services injected by the app shell. Null keeps the controller usable
 ## on its own (tests, a game scene loaded directly), where it builds its own.
 var shared_save_store: SaveStore = null
@@ -237,7 +242,7 @@ func _load_start_arena(arguments: Dictionary) -> ArenaData:
 	var loaded := ArenaData.load_directory(ARENA_DIRECTORY)
 	for message in loaded.errors:
 		push_error("arena load: %s" % message)
-	return select_start_arena(loaded, str(arguments.get("arena", "")))
+	return select_start_arena(loaded, str(arguments.get("arena", "")), start_mode)
 
 
 func _init_save_store(arguments: Dictionary) -> void:
