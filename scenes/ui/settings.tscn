@@ -1,0 +1,107 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/ui/settings_screen.gd" id="1_settings"]
+
+[node name="Settings" type="CanvasLayer"]
+layer = 30
+script = ExtResource("1_settings")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="Panel" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"BackdropPanel"
+
+[node name="Center" type="CenterContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="Root/Center"]
+layout_mode = 2
+custom_minimum_size = Vector2(640, 0)
+
+[node name="Margin" type="MarginContainer" parent="Root/Center/Panel"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Root/Center/Panel/Margin"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="Root/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"PanelTitleLabel"
+horizontal_alignment = 1
+
+[node name="FocusHintLabel" type="Label" parent="Root/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"AccentLabel"
+horizontal_alignment = 1
+
+[node name="MasterRow" type="HBoxContainer" parent="Root/Center/Panel/Margin/VBox"]
+layout_mode = 2
+
+[node name="MasterLabel" type="Label" parent="Root/Center/Panel/Margin/VBox/MasterRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(220, 0)
+vertical_alignment = 1
+
+[node name="MasterSlider" type="HSlider" parent="Root/Center/Panel/Margin/VBox/MasterRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 44)
+size_flags_horizontal = 3
+min_value = 0.0
+max_value = 100.0
+step = 1.0
+value = 80.0
+
+[node name="MasterValueLabel" type="Label" parent="Root/Center/Panel/Margin/VBox/MasterRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(56, 0)
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="SfxRow" type="HBoxContainer" parent="Root/Center/Panel/Margin/VBox"]
+layout_mode = 2
+
+[node name="SfxLabel" type="Label" parent="Root/Center/Panel/Margin/VBox/SfxRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(220, 0)
+vertical_alignment = 1
+
+[node name="SfxSlider" type="HSlider" parent="Root/Center/Panel/Margin/VBox/SfxRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 44)
+size_flags_horizontal = 3
+min_value = 0.0
+max_value = 100.0
+step = 1.0
+value = 80.0
+
+[node name="SfxValueLabel" type="Label" parent="Root/Center/Panel/Margin/VBox/SfxRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(56, 0)
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="MuteCheck" type="CheckButton" parent="Root/Center/Panel/Margin/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(44, 44)
+
+[node name="BackButton" type="Button" parent="Root/Center/Panel/Margin/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(44, 44)

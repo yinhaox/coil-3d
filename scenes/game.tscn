@@ -94,6 +94,7 @@ horizontal_alignment = 2
 [connection signal="run_ended" from="." to="EndPanel" method="_on_run_ended"]
 [connection signal="resume_requested" from="PauseMenu" to="." method="_on_pause_resume"]
 [connection signal="restart_requested" from="PauseMenu" to="." method="_on_restart_requested"]
+[connection signal="settings_requested" from="PauseMenu" to="." method="_on_settings_requested"]
 [connection signal="main_menu_requested" from="PauseMenu" to="." method="_on_main_menu_requested"]
 [connection signal="retry_requested" from="EndPanel" to="." method="_on_restart_requested"]
 [connection signal="main_menu_requested" from="EndPanel" to="." method="_on_main_menu_requested"]
