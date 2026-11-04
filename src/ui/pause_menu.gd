@@ -9,12 +9,14 @@ extends CanvasLayer
 
 signal resume_requested
 signal restart_requested
+signal settings_requested
 signal main_menu_requested
 
 @onready var _root: Control = $Root
 @onready var _title_label: Label = $Root/Center/Panel/Margin/VBox/TitleLabel
 @onready var _resume_button: Button = $Root/Center/Panel/Margin/VBox/ResumeButton
 @onready var _restart_button: Button = $Root/Center/Panel/Margin/VBox/RestartButton
+@onready var _settings_button: Button = $Root/Center/Panel/Margin/VBox/SettingsButton
 @onready var _main_menu_button: Button = $Root/Center/Panel/Margin/VBox/MainMenuButton
 
 
@@ -23,10 +25,23 @@ func _ready() -> void:
 	_title_label.text = tr("Paused")
 	_resume_button.text = tr("Resume")
 	_restart_button.text = tr("Restart")
+	_settings_button.text = tr("Settings")
 	_main_menu_button.text = tr("Main menu")
-	var buttons: Array[Button] = [_resume_button, _restart_button, _main_menu_button]
+	var buttons: Array[Button] = [
+		_resume_button, _restart_button, _settings_button, _main_menu_button
+	]
 	FocusRing.wire_vertical(buttons)
 	_set_shown(false)
+
+
+## The game controller injects the shared audio director after the scene is
+## built, so the pause buttons use the same click cue as the menus.
+func wire_audio(audio: AudioDirector) -> void:
+	if audio == null:
+		return
+	audio.wire_buttons([
+		_resume_button, _restart_button, _settings_button, _main_menu_button
+	])
 
 
 func _on_status_changed(_score: int, state: int, _end_reason: int) -> void:
@@ -44,6 +59,10 @@ func _on_resume_pressed() -> void:
 
 func _on_restart_pressed() -> void:
 	restart_requested.emit()
+
+
+func _on_settings_pressed() -> void:
+	settings_requested.emit()
 
 
 func _on_main_menu_pressed() -> void:

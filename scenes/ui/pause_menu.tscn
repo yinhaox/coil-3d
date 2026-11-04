@@ -56,10 +56,15 @@ custom_minimum_size = Vector2(44, 44)
 layout_mode = 2
 custom_minimum_size = Vector2(44, 44)
 
+[node name="SettingsButton" type="Button" parent="Root/Center/Panel/Margin/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(44, 44)
+
 [node name="MainMenuButton" type="Button" parent="Root/Center/Panel/Margin/VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(44, 44)
 
 [connection signal="pressed" from="Root/Center/Panel/Margin/VBox/ResumeButton" to="." method="_on_resume_pressed"]
 [connection signal="pressed" from="Root/Center/Panel/Margin/VBox/RestartButton" to="." method="_on_restart_pressed"]
+[connection signal="pressed" from="Root/Center/Panel/Margin/VBox/SettingsButton" to="." method="_on_settings_pressed"]
 [connection signal="pressed" from="Root/Center/Panel/Margin/VBox/MainMenuButton" to="." method="_on_main_menu_pressed"]
