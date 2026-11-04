@@ -210,16 +210,27 @@ func _on_settings_requested() -> void:
 	settings_requested.emit()
 
 
-## Startup arena: the requested id, else the first Classic arena by file name.
-static func select_start_arena(loaded: ArenaData.LoadResult, requested_id: String) -> ArenaData:
+## Startup arena: the requested id, else the requested mode's default arena
+## (Classic when no mode is given or the mode is unknown). The id still wins so
+## `--arena` keeps selecting one specific file.
+static func select_start_arena(
+	loaded: ArenaData.LoadResult, requested_id: String, requested_mode: String = ""
+) -> ArenaData:
 	if loaded == null:
 		return null
-	if requested_id.is_empty():
-		return loaded.arena_for_mode(ArenaData.MODE_CLASSIC)
+	if not requested_id.is_empty():
+		for arena in loaded.arenas:
+			if arena.id == requested_id:
+				return arena
+		return null
+	var mode_name := ModeCatalog.resolve_mode(requested_mode)
+	var default_id := ModeCatalog.default_arena_id(mode_name)
 	for arena in loaded.arenas:
-		if arena.id == requested_id:
+		if arena.id == default_id:
 			return arena
-	return null
+	# A broken or missing default file keeps the old "first arena for the mode"
+	# behavior so the game still starts (design/game-modes.md rule 12).
+	return loaded.arena_for_mode(mode_name)
 
 
 func _load_start_arena(arguments: Dictionary) -> ArenaData:
