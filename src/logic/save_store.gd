@@ -1,7 +1,8 @@
 class_name SaveStore
 extends RefCounted
 
-## Local save file: per-mode best scores, run count and the volume settings.
+## Local save file: per-mode best scores, run count, the volume settings and the
+## last mode the player chose.
 ##
 ## The single `user://` entry of the game (design/architecture.md rule 10). The
 ## schema follows design/ux-and-persistence.md: version 1, best scores per mode,
@@ -13,6 +14,7 @@ extends RefCounted
 
 const DEFAULT_PATH := "user://save.json"
 const SCHEMA_VERSION := 1
+const DEFAULT_LAST_MODE := ModeCatalog.DEFAULT_MODE
 const BACKUP_SUFFIX := ".bak"
 const TEMP_SUFFIX := ".tmp"
 const CORRUPT_INFIX := ".corrupt-"
@@ -30,6 +32,7 @@ var _schema_version: int = SCHEMA_VERSION
 var _best_scores: Dictionary = {}
 var _settings: Dictionary = {}
 var _total_runs: int = 0
+var _last_mode: String = DEFAULT_LAST_MODE
 var _read_only := false
 var _last_error := ""
 
@@ -38,6 +41,7 @@ func _init(path: String = DEFAULT_PATH) -> void:
 	_path = path
 	_best_scores = _default_best_scores()
 	_settings = default_settings()
+	_last_mode = DEFAULT_LAST_MODE
 
 
 ## Read `save.json`, then `save.bak`, then fall back to defaults.
@@ -47,6 +51,7 @@ func load_from_disk() -> bool:
 	_best_scores = _default_best_scores()
 	_settings = default_settings()
 	_total_runs = 0
+	_last_mode = DEFAULT_LAST_MODE
 	_read_only = false
 	_last_error = ""
 
@@ -129,6 +134,17 @@ func schema_version() -> int:
 	return _schema_version
 
 
+## Mode the main menu highlights on the next launch. An unknown value never
+## reaches this field: both `set_last_mode` and the loader resolve it through
+## ModeCatalog, so the menu always opens on a real catalog entry.
+func last_mode() -> String:
+	return _last_mode
+
+
+func set_last_mode(mode_name: String) -> void:
+	_last_mode = _sanitize_last_mode(mode_name)
+
+
 ## True when the file on disk declares a newer schema: settings fall back to
 ## defaults and this run never writes over the file (design rule 14).
 func is_read_only() -> bool:
@@ -168,6 +184,7 @@ func to_dictionary() -> Dictionary:
 		"schema_version": SCHEMA_VERSION,
 		"best_scores": scores,
 		"total_runs": _total_runs,
+		"last_mode": _last_mode,
 		"settings": {
 			SETTING_MASTER_VOLUME: master_volume(),
 			SETTING_SFX_VOLUME: sfx_volume(),
@@ -203,6 +220,7 @@ func _apply(data: Dictionary) -> void:
 		_schema_version = loaded_version
 		_best_scores = _sanitize_best_scores(data.get("best_scores"))
 		_total_runs = _sanitize_total_runs(data.get("total_runs"))
+		_last_mode = _sanitize_last_mode(data.get("last_mode"))
 		return
 	if loaded_version < SCHEMA_VERSION:
 		data = _migrate(data, loaded_version)
@@ -210,6 +228,7 @@ func _apply(data: Dictionary) -> void:
 	_best_scores = _sanitize_best_scores(data.get("best_scores"))
 	_settings = _sanitize_settings(data.get("settings"))
 	_total_runs = _sanitize_total_runs(data.get("total_runs"))
+	_last_mode = _sanitize_last_mode(data.get("last_mode"))
 
 
 ## Migration skeleton: upgrade an older dictionary field by field before the
@@ -279,6 +298,15 @@ func _sanitize_total_runs(raw: Variant) -> int:
 	if not _is_number(raw):
 		return 0
 	return clampi(int(raw), 0, MAX_TOTAL_RUNS)
+
+
+## A mode name is only kept when the catalog knows it; a hand-edited or stale
+## value opens the menu on Classic instead of leaving a dead entry highlighted.
+func _sanitize_last_mode(raw: Variant) -> String:
+	if typeof(raw) != TYPE_STRING:
+		return DEFAULT_LAST_MODE
+	var mode_name := str(raw)
+	return mode_name if ModeCatalog.MODES.has(mode_name) else DEFAULT_LAST_MODE
 
 
 func _clamped_volume(raw: Variant, fallback: float) -> float:

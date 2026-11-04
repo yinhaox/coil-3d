@@ -21,8 +21,9 @@ const VERSION_PREFIX := "v"
 ## (tests) simply plays no click cue.
 var audio: AudioDirector = null
 
-## Mode the buttons highlight and Play starts. AppRoot injects the mode the last
-## run used; a standalone instance (tests) opens on the catalog default.
+## Mode the buttons highlight and Play starts. AppRoot injects SaveStore's
+## `last_mode` before the menu enters the tree; a standalone instance (tests)
+## opens on the catalog default.
 var current_mode: String = ModeCatalog.DEFAULT_MODE
 
 var _mode_group: ButtonGroup = ButtonGroup.new()
