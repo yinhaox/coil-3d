@@ -1,0 +1,140 @@
+- generic [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - button "新建会话" [ref=e9] [cursor=pointer]:
+          - generic [ref=e18]:
+            - generic [ref=e19]: DSH 本地构建
+            - generic [ref=e20]: 0.2.2-alpha.2-ce7073d
+        - button "收起侧边栏" [ref=e21] [cursor=pointer]
+      - button "新建会话" [ref=e24] [cursor=pointer]:
+        - generic [ref=e25]: 新会话
+        - generic [aria-hidden]:
+          - generic:
+            - generic: Ctrl
+            - generic: +
+            - generic: Alt
+            - generic: +
+            - generic: "N"
+      - navigation "全局面板" [ref=e30]:
+        - button "插件" [ref=e31] [cursor=pointer]
+        - button "Superagent" [ref=e37] [cursor=pointer]
+        - button "自动化任务" [ref=e44] [cursor=pointer]
+        - button "更多" [ref=e51] [cursor=pointer]
+      - generic [ref=e58]:
+        - generic [ref=e59]:
+          - generic [ref=e60]: 工作区
+          - generic [ref=e62]:
+            - button "搜索会话" [ref=e63] [cursor=pointer]
+            - textbox "搜索会话名称"
+          - generic [ref=e66]:
+            - button "视图选项" [ref=e68] [cursor=pointer]
+            - button "添加工作区" [ref=e71] [cursor=pointer]
+        - tree "会话" [ref=e76]:
+          - treeitem "input-visual-regression-8fcf38107b5b" [ref=e668] [cursor=pointer]
+          - generic [ref=e77]:
+            - treeitem "speed-tuning-decision-5d60bf848892" [expanded] [ref=e79] [cursor=pointer]
+            - treeitem "新会话" [ref=e497] [cursor=pointer]
+            - 'treeitem "速度调优先择 A 或 B，给推荐后等选（Type: story） 21分钟" [ref=e706] [cursor=pointer]':
+              - generic [ref=e503]: "速度调优先择 A 或 B，给推荐后等选（Type: story）"
+              - generic [ref=e504]: 21分钟
+          - treeitem "review-pr-12-9873cc36b734" [ref=e87] [cursor=pointer]
+          - treeitem "immediate-turn-input-e0c5f55de51a" [ref=e95] [cursor=pointer]
+          - treeitem "fix-import-parse-error-1208440aa9f7" [ref=e103] [cursor=pointer]
+          - treeitem "arena-view-3d-evidence-9d40a6b849e8" [ref=e111] [cursor=pointer]
+          - treeitem "arena-view-3d-f7e60bde04c9" [ref=e119] [cursor=pointer]
+          - treeitem "accessibility-touch-controls-5dfedbc8ed6f" [ref=e127] [cursor=pointer]
+          - treeitem "core-snake-logic-71ec58a62632" [ref=e135] [cursor=pointer]
+          - treeitem "coil-3d-design-docs-eae81a04b780" [ref=e143] [cursor=pointer]
+          - treeitem "coil-3d-design-doc-ecc55531f84c" [ref=e151] [cursor=pointer]
+          - treeitem "superagent-coil" [ref=e159] [cursor=pointer]
+          - treeitem "fix-wall-artifacts-aac3cd51a4a3" [ref=e167] [cursor=pointer]
+          - treeitem "design-audio-align-34fcb70ac5ae" [ref=e175] [cursor=pointer]
+          - treeitem "visual-polish-67256e2db6fc" [ref=e183] [cursor=pointer]
+          - treeitem "release-0-1-0-0ad39f92ad9a" [ref=e191] [cursor=pointer]
+          - treeitem "audio-cues-2d934f06d8de" [ref=e199] [cursor=pointer]
+          - treeitem "boot-aids-8f12e74d1c21" [ref=e207] [cursor=pointer]
+          - treeitem "levels-010-020-3b173eb7abd7" [ref=e215] [cursor=pointer]
+          - treeitem "save-settings-i18n-a89ec3c35a53" [ref=e223] [cursor=pointer]
+          - treeitem "level-content-20-d96c93887b0c" [ref=e231] [cursor=pointer]
+          - treeitem "ui-shell-actions-7730baf5f713" [ref=e239] [cursor=pointer]
+          - treeitem "playable-moves-176181f579e7" [ref=e247] [cursor=pointer]
+          - treeitem "fix-room-framing-a25174f04f11" [ref=e255] [cursor=pointer]
+          - treeitem "iso-room-camera-98ba09ee1820" [ref=e263] [cursor=pointer]
+          - treeitem "design-corrections-a494c9e6eaff" [ref=e271] [cursor=pointer]
+          - treeitem "headless-core-rules-2e011fbcc8de" [ref=e279] [cursor=pointer]
+          - treeitem "design-sokoban-3d-6fd7cb84ede1" [ref=e287] [cursor=pointer]
+          - treeitem "superagent-sokoban" [ref=e295] [cursor=pointer]
+          - treeitem "Claude-Code-Game-Studios" [ref=e303] [cursor=pointer]
+          - treeitem "Desktop" [ref=e311] [cursor=pointer]
+          - treeitem "NewAssets" [ref=e319] [cursor=pointer]
+          - treeitem "GameAssets" [ref=e327] [cursor=pointer]
+          - treeitem "dsh-search-screen" [ref=e335] [cursor=pointer]
+          - treeitem "Game" [ref=e343] [cursor=pointer]
+          - treeitem "ChangeOutfit" [ref=e351] [cursor=pointer]
+          - treeitem "VermintideLike" [ref=e359] [cursor=pointer]
+          - treeitem "基金" [ref=e367] [cursor=pointer]
+          - treeitem "电影" [ref=e375] [cursor=pointer]
+          - treeitem "题目" [ref=e383] [cursor=pointer]
+          - treeitem "resume-editor" [ref=e391] [cursor=pointer]
+          - treeitem "Other" [ref=e399] [cursor=pointer]
+          - treeitem "vermintide-2-source-code" [ref=e407] [cursor=pointer]
+          - treeitem "TR" [ref=e415] [cursor=pointer]
+          - treeitem "deepseek-harness" [ref=e423] [cursor=pointer]
+          - treeitem "OMV" [ref=e431] [cursor=pointer]
+          - treeitem "2026-08-16 03.09.12 DESKTOP-L9DE2JG B97579 Crash" [ref=e439] [cursor=pointer]
+          - treeitem "未分组" [ref=e507] [cursor=pointer]
+      - button "账号菜单" [ref=e452] [cursor=pointer]:
+        - generic [ref=e513]: 139******26
+    - generic [ref=e576]:
+      - banner [ref=e577]:
+        - heading "Superagent" [level=1] [ref=e579]
+        - generic [ref=e580]:
+          - search [ref=e581]:
+            - searchbox "搜索" [ref=e586]
+          - button "术语表" [ref=e587] [cursor=pointer]
+          - button [ref=e591] [cursor=pointer]
+      - tablist "dsh-superagent 页面" [ref=e595]:
+        - tab "概览" [ref=e596] [cursor=pointer]
+        - tab "来源" [ref=e597] [cursor=pointer]
+        - tab "触发" [ref=e598] [cursor=pointer]
+        - tab "评估" [ref=e599] [cursor=pointer]
+        - tab "执行" [selected] [ref=e600] [cursor=pointer]
+        - tab "设置" [ref=e601] [cursor=pointer]
+      - tabpanel "执行" [ref=e641]:
+        - generic [ref=e642]:
+          - heading [level=2] [ref=e643]:
+            - text: 状态
+            - button "执行器的状态，以及按在等谁分组的工单。" [ref=e644]
+          - button [ref=e647] [cursor=pointer]
+        - generic [ref=e651]:
+          - generic [ref=e652]: 处理已暂停
+          - generic [ref=e653]: 执行中 1 / 2
+          - generic [ref=e654]: 排队 0
+          - button [ref=e705] [cursor=pointer]
+        - generic [ref=e659]:
+          - button "进行中" [pressed] [ref=e660] [cursor=pointer]
+          - button "待处理" [ref=e661] [cursor=pointer]
+          - button "执行中" [ref=e662] [cursor=pointer]
+          - button "等待新触发" [ref=e663] [cursor=pointer]
+          - button "已结束" [ref=e664] [cursor=pointer]
+        - list [ref=e675]:
+          - listitem [ref=e676]:
+            - generic [ref=e677]: 执行中
+            - generic [ref=e683]:
+              - 'button "加入输入事件测试与截图基线比对（Type: story）" [ref=e685] [cursor=pointer]'
+              - generic [ref=e686]:
+                - 'link "GitHub #17" [ref=e687] [cursor=pointer]':
+                  - /url: https://github.com/yinhaox/coil-3d/issues/17
+                  - generic [ref=e688]: GitHub
+                  - generic [ref=e689]: "#17"
+                - generic [ref=e707]: 未送达 1
+                - time [ref=e693]: 现在
+  - dialog "恢复处理" [active] [ref=e709]:
+    - generic [ref=e710]:
+      - heading "恢复处理" [level=2] [ref=e711]
+      - button "关闭" [ref=e712] [cursor=pointer]
+    - paragraph [ref=e715]: 恢复后继续评估、派工和发送回复。
+    - generic [ref=e716]:
+      - button "取消" [ref=e717] [cursor=pointer]
+      - button "确定" [ref=e718] [cursor=pointer]
