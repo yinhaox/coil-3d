@@ -55,6 +55,24 @@ autowrap_mode = 3
 layout_mode = 2
 custom_minimum_size = Vector2(44, 44)
 
+[node name="ModeRow" type="HBoxContainer" parent="Center/Panel/Margin/VBox"]
+layout_mode = 2
+
+[node name="ClassicButton" type="Button" parent="Center/Panel/Margin/VBox/ModeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(44, 44)
+
+[node name="MazeButton" type="Button" parent="Center/Panel/Margin/VBox/ModeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(44, 44)
+
+[node name="TimeAttackButton" type="Button" parent="Center/Panel/Margin/VBox/ModeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(44, 44)
+
 [node name="HowToPlayButton" type="Button" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(44, 44)
