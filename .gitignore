@@ -7,6 +7,9 @@ export/
 # Temporary files
 *.tmp
 
+# Local Playwright CLI snapshots (they embed the DSH session list)
+.playwright-cli/
+
 # OS metadata
 .DS_Store
 # Python helper cache
